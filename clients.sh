@@ -6,5 +6,6 @@ request() {
 
 for i in {0..999}
 do
-  request >/dev/null &
+  # running requests in a subshell suppresses job control output
+  (request >/dev/null &)
 done
