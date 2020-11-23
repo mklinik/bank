@@ -17,8 +17,8 @@
     {:status 200
      :headers {"Content-type" "text/json"}
      ; the request body is a stream, we have to slurp it or else encode can't
-     ; handle it
-     :body (encode (update request :body slurp))}))
+     ; handle it. decode after slurp turns it into nested json
+     :body (encode (update request :body (comp decode slurp)))}))
 
 (defn run []
   (run-jetty
