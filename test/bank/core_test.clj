@@ -6,6 +6,7 @@
     [bank.core :as bank]))
 
 ; A fixture that starts the bank app in jetty, runs the test f, then stops the server
+; https://stackoverflow.com/questions/24480996/how-to-do-integration-testing-for-clojure-ring-selenium-leiningen
 ; TODO: We also want to clear the database, so each test runs in a fresh database
 ; TODO: Find a way to test persistence between server restarts
 (defn with-ring [f]
@@ -37,6 +38,18 @@
           "name" "Mr. Orange"
           "balance" 0}
          (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"}))))
+
+
+(deftest create-two-accounts-test
+  (is (= {"account-number" "1"
+          "name" "Mr. Orange"
+          "balance" 0}
+         (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
+  (is (= {"account-number" "2"
+          "name" "Mr. White"
+          "balance" 0}
+  (curl-post "http://localhost:3000/account" {"name" "Mr. White"}))))
+
 
 (deftest create-and-then-retrieve-test
   (is (= {"account-number" "1"
