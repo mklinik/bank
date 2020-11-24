@@ -7,14 +7,6 @@
   (:require [compojure.route :as route])
   (:require [cheshire.core :as json]))
 
-(defn create-account
-  ([request respond raise] (respond (create-account request)))
-  ([request] (do
-    (println "request account")
-    (->
-      (res/response (json/encode {"TODO" "implement response"}))
-      (res/content-type "application/json")))))
-
 ; For debugging. Don't wrap this in any middleware.
 (defn echo
   ([request respond raise] (respond (echo request)))
@@ -27,9 +19,25 @@
       (res/response (json/encode (update request :body (comp json/decode slurp))))
       (res/content-type "application/json")))))
 
+(defn create-account
+  ([request respond raise] (respond (create-account request)))
+  ([request] (do
+    (println "request account for" (get-in request [:body "name"]))
+    (->
+      (res/response (json/encode {"TODO" "implement response"}))
+      (res/content-type "application/json")))))
+
+(defn retrieve-account
+  ([account-id] (do
+    (println "retrieve account id")
+    (->
+      (res/response (json/encode {"TODO" "implement response"}))
+      (res/content-type "application/json")))))
+
 (defroutes main-routes
   (ANY "/echo" [] echo)
   (POST "/account" [] (wrap-json-body create-account))
+  (GET "/account/:id" [account-id] (retrieve-account account-id))
   (route/not-found "Page not found"))
 
 (def app (->
