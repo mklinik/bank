@@ -22,7 +22,10 @@
   ([request] (do
     (println "create account for" (get-in request [:body "name"]))
     (->
-      (res/response (json/encode {"TODO" "implement create"}))
+      (res/response (json/encode
+        {"account-number" "1"
+         "balance" 0
+         "name" (get-in request [:body "name"])}))
       (res/content-type "application/json")))))
 
 (defn retrieve-account
