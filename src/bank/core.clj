@@ -45,7 +45,7 @@
 ; json body, the others get nil. FUCK STATE.
 (defroutes main-routes
   (ANY "/echo" [] echo)
-  (POST "/account" request ((wrap-json-body create-account) request))
+  (POST "/account" [] (wrap-json-body create-account))
   (POST "/account/:id/deposit" request ((wrap-json-body deposit) request))
   (GET "/account/:id" [id] (partial retrieve-account id))
   (route/not-found "Page not found"))
