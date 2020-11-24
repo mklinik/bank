@@ -27,3 +27,7 @@
     {:port  3000
      :async? async
      :join? false}))
+
+(defn -main
+  [& args]
+  (run false))

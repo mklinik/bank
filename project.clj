@@ -7,4 +7,5 @@
                  [ring/ring-core "1.8.2"]
                  [ring/ring-jetty-adapter "1.8.2"]
                  [cheshire "5.10.0"]]
+  :main bank.core
   :repl-options {:init-ns bank.core})
