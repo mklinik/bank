@@ -36,7 +36,7 @@
 
 (defn deposit
   ([account-id request] (do
-    (println "deposit")
+    (println "deposit to" account-id (get-in request [:body "amount"]))
     (->
       (res/response (json/encode {"TODO" "implement response"}))
       (res/content-type "application/json")))))

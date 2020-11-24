@@ -12,6 +12,13 @@ request-create-account() {
   echo ""
 }
 
+request-deposit() {
+  curl -v 'http://localhost:3000/account/42/deposit' \
+    -d '{ "amount": 100 }' \
+    -H "Content-Type: application/json"
+  echo ""
+}
+
 request-echo() {
   curl -v 'http://localhost:3000/echo' \
     -d '{ "name": "Mr. Black" }' \
