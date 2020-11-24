@@ -30,6 +30,9 @@
 
 (defroutes main-routes
   (GET "/" [] "hello world")
+  (GET "/echo" [] request-echo)
+  (POST "/echo" [] request-echo)
+  (GET "/ip" [] what-is-my-ip)
   (route/not-found "Page not found"))
 
 (def app (->
