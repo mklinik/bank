@@ -9,7 +9,6 @@
 
 ; For debugging. Don't wrap this in any middleware.
 (defn echo
-  ([request respond raise] (respond (echo request)))
   ([request] (do
     (->
       ; the request body is a stream, we have to slurp it or else encode can't
@@ -20,7 +19,6 @@
       (res/content-type "application/json")))))
 
 (defn create-account
-  ([request respond raise] (respond (create-account request)))
   ([request] (do
     (println "create account for" (get-in request [:body "name"]))
     (->
