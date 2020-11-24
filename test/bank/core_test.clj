@@ -36,10 +36,11 @@
   (json/decode (:out (sh "curl" "-q" url))))
 
 (deftest create-account-test
-  (is (= {"account-number" 1
-          "name" "Mr. Orange"
-          "balance" 0}
-         (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"}))))
+  (testing "create an account and check the returned response"
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 0}
+           (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))))
 
 
 (deftest create-two-accounts-test
