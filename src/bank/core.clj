@@ -22,7 +22,7 @@
 (defn create-account
   ([request respond raise] (respond (create-account request)))
   ([request] (do
-    (println "request account for" (get-in request [:body "name"]))
+    (println "create account for" (get-in request [:body "name"]))
     (->
       (res/response (json/encode {"TODO" "implement response"}))
       (res/content-type "application/json")))))
