@@ -33,17 +33,21 @@
       (res/content-type "application/json")))))
 
 (defn deposit
-  ([account-id request] (do
-    (println "deposit to" account-id (get-in request [:body "amount"]))
+  ([request] (do
+    (println "deposit to" (get-in request [:route-params :id]) (get-in request [:body]))
     (->
-      (res/response (json/encode {"TODO" "implement response"}))
+      (res/response (json/encode request))
       (res/content-type "application/json")))))
 
+; wrap-json-body must be on the innermost level, because it consumes the :body
+; input stream. defroutes tries routes until the first one matches. If multiple
+; rules use wrap-json-body on the outside, only the first one gets an actual
+; json body, the others get nil. FUCK STATE.
 (defroutes main-routes
   (ANY "/echo" [] echo)
-  (wrap-json-body (POST "/account" [] create-account))
+  (POST "/account" request ((wrap-json-body create-account) request))
+  (POST "/account/:id/deposit" request ((wrap-json-body deposit) request))
   (GET "/account/:id" [id] (partial retrieve-account id))
-  (wrap-json-body (POST "/account/:id/deposit" [id] (partial deposit id)))
   (route/not-found "Page not found"))
 
 (def app (->
