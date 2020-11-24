@@ -5,7 +5,10 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [ring/ring-core "1.8.2"]
+                 [ring/ring-devel "1.8.2"]
                  [ring/ring-jetty-adapter "1.8.2"]
                  [cheshire "5.10.0"]]
+  :plugins [[lein-ring "0.12.5"]]
+  :ring {:handler bank.core/request-echo}
   :main bank.core
   :repl-options {:init-ns bank.core})
