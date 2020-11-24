@@ -3,7 +3,9 @@
     [clojure.test :refer :all]
     [clojure.java.shell :refer :all]
     [cheshire.core :as json]
-    [bank.core :as bank]))
+    [bank.core :as bank]
+    [bank.util :refer :all]
+    ))
 
 ; A fixture that starts the bank app in jetty, runs the test f, then stops the server
 ; https://stackoverflow.com/questions/24480996/how-to-do-integration-testing-for-clojure-ring-selenium-leiningen
@@ -34,29 +36,31 @@
   (json/decode (:out (sh "curl" "-q" url))))
 
 (deftest create-account-test
-  (is (= {"account-number" "1"
+  (is (= {"account-number" 1
           "name" "Mr. Orange"
           "balance" 0}
          (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"}))))
 
 
 (deftest create-two-accounts-test
-  (is (= {"account-number" "1"
-          "name" "Mr. Orange"
-          "balance" 0}
-         (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
-  (is (= {"account-number" "2"
-          "name" "Mr. White"
-          "balance" 0}
-  (curl-post "http://localhost:3000/account" {"name" "Mr. White"}))))
+  (pending "create two accounts, they should get consecutive numbers"
+    (is (= {"account-number" "1"
+            "name" "Mr. Orange"
+            "balance" 0}
+           (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
+    (is (= {"account-number" "2"
+            "name" "Mr. White"
+            "balance" 0}
+    (curl-post "http://localhost:3000/account" {"name" "Mr. White"})))))
 
 
 (deftest create-and-then-retrieve-test
-  (is (= {"account-number" "1"
-          "name" "Mr. Orange"
-          "balance" 0}
-         (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
-  (is (= {"account-number" "1"
-          "name" "Mr. Orange"
-          "balance" 0}
-         (curl-get  "http://localhost:3000/account/1"))))
+  (pending "create an account and then retieve it"
+    (is (= {"account-number" "1"
+            "name" "Mr. Orange"
+            "balance" 0}
+           (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
+    (is (= {"account-number" "1"
+            "name" "Mr. Orange"
+            "balance" 0}
+           (curl-get  "http://localhost:3000/account/1")))))
