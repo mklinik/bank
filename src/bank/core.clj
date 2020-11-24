@@ -22,21 +22,21 @@
   ([request] (do
     (println "create account for" (get-in request [:body "name"]))
     (->
-      (res/response (json/encode {"TODO" "implement response"}))
+      (res/response (json/encode {"TODO" "implement create"}))
       (res/content-type "application/json")))))
 
 (defn retrieve-account
   ([request] (do
     (println "retrieve account" (get-in request [:route-params :id]))
     (->
-      (res/response (json/encode {"TODO" "implement response" "id" (get-in request [:route-params :id])}))
+      (res/response (json/encode {"TODO" "implement retrieve" "id" (get-in request [:route-params :id])}))
       (res/content-type "application/json")))))
 
 (defn deposit
   ([request] (do
     (println "deposit to" (get-in request [:route-params :id]) (get-in request [:body]))
     (->
-      (res/response (json/encode request))
+      (res/response (json/encode {"TODO" "implement deposit"}))
       (res/content-type "application/json")))))
 
 ; wrap-json-body must be on the innermost level, because it consumes the :body
