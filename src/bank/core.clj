@@ -36,7 +36,7 @@
 
 (defroutes main-routes
   (ANY "/echo" [] echo)
-  (POST "/account" [] (wrap-json-body create-account))
+  (wrap-json-body (POST "/account" [] create-account))
   (GET "/account/:id" [account-id] (retrieve-account account-id))
   (route/not-found "Page not found"))
 
