@@ -1,7 +1,11 @@
 (ns bank.core
+  (:use compojure.core)
   (:require [ring.adapter.jetty :refer :all])
   (:require [ring.util.response :as res])
   (:require [ring.util.request :as req])
+  (:require [compojure.route :as route]
+            [compojure.handler :as handler]
+            [compojure.response :as response])
   (:require [cheshire.core :refer :all]))
 
 (defn handler [request]
@@ -23,6 +27,13 @@
       ; handle it. decode after slurp turns it into nested json
       (res/response (encode (update request :body (comp decode slurp))))
       (res/content-type "application/json")))))
+
+(defroutes main-routes
+  (GET "/" [] "hello world")
+  (route/not-found "Page not found"))
+
+(def app (->
+  (handler/site main-routes)))
 
 (defn run [async]
   (run-jetty

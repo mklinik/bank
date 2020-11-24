@@ -7,8 +7,9 @@
                  [ring/ring-core "1.8.2"]
                  [ring/ring-devel "1.8.2"]
                  [ring/ring-jetty-adapter "1.8.2"]
+                 [compojure "1.6.2"]
                  [cheshire "5.10.0"]]
   :plugins [[lein-ring "0.12.5"]]
-  :ring {:handler bank.core/request-echo}
+  :ring {:handler bank.core/app}
   :main bank.core
   :repl-options {:init-ns bank.core})
