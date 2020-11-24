@@ -20,7 +20,7 @@
       ; the request body is a stream, we have to slurp it or else encode can't
       ; handle it. decode after slurp turns it into nested json
       (response (encode (update request :body (comp decode slurp))))
-      (content-type "text/json"))))
+      (content-type "application/json"))))
 
 (defn run [async]
   (run-jetty
