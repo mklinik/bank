@@ -28,8 +28,15 @@
       (res/content-type "application/json")))))
 
 (defn retrieve-account
-  ([account-id] (do
-    (println "retrieve account id")
+  ([account-id request] (do
+    (println "retrieve account" account-id)
+    (->
+      (res/response (json/encode {"TODO" "implement response" "id" account-id}))
+      (res/content-type "application/json")))))
+
+(defn deposit
+  ([account-id request] (do
+    (println "deposit")
     (->
       (res/response (json/encode {"TODO" "implement response"}))
       (res/content-type "application/json")))))
@@ -37,7 +44,8 @@
 (defroutes main-routes
   (ANY "/echo" [] echo)
   (wrap-json-body (POST "/account" [] create-account))
-  (GET "/account/:id" [account-id] (retrieve-account account-id))
+  (GET "/account/:id" [id] (partial retrieve-account id))
+  (wrap-json-body (POST "/account/:id/deposit" [id] (partial deposit id)))
   (route/not-found "Page not found"))
 
 (def app (->

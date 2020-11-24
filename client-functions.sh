@@ -5,7 +5,7 @@ request-retrieve-account() {
   echo ""
 }
 
-request-account() {
+request-create-account() {
   curl -v 'http://localhost:3000/account' \
     -d '{ "name": "Mr. Black" }' \
     -H "Content-Type: application/json"
