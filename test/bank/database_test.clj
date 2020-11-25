@@ -6,11 +6,9 @@
 
 (deftest db-empty-table-test
   (testing "after drop-tables, the database should be empty"
-    (let
-      [result (do
-        (drop-tables default-ds)
-        (create-tables default-ds)
-        (sql/execute! default-ds ["select * from account"]))]
+    (drop-tables default-ds)
+    (create-tables default-ds)
+    (let [result (sql/execute! default-ds ["select * from account"])]
       (is (= [] result)))))
 
 (deftest db-create-account-test
