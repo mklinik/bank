@@ -23,7 +23,7 @@
   ([request] (do
     (println "create account for" (get-in request [:body "name"]))
     (let [new-account-orig (db/create-account db/default-ds (get-in request [:body "name"]))
-          new-account (db/table-to-json-names new-account-orig)]
+          new-account (db/db-to-json-names new-account-orig)]
       (->
         (res/response (json/encode new-account))
         (res/content-type "application/json"))))))

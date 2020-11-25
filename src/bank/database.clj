@@ -32,11 +32,11 @@
 
 ; Column names in the database and json names in requests and responses differ.
 ; These functions help translating between them.
-(defn table-to-json-names [m]
+(defn db-to-json-names [m]
   (rename-keys m
     { :account/id :account-number
     , :account/name :name
     , :account/balance :balance
     }))
 
-(defn json-to-table-names [m] m)
+(defn json-to-db-names [m] m)
