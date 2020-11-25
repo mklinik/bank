@@ -67,3 +67,29 @@
             "name" "Mr. Orange"
             "balance" 0.0}
            (curl-get  "http://localhost:3000/account/1")))))
+
+
+(deftest create-and-then-retrieve-multiple-test
+  (testing "create multiple accounts and then retieve them"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Black"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. White"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Pink"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {"account-number" 2
+            "name" "Mr. Black"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/2")))
+    (is (= {"account-number" 3
+            "name" "Mr. White"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/3")))
+    (is (= {"account-number" 4
+            "name" "Mr. Pink"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/4")))
+))
