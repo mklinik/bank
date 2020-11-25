@@ -23,7 +23,9 @@
   (create-tables ds)))
 
 ; TODO: take care of sql injection: how?
-; Create an account with the given name. Returns the created row as map.
+; Create an account with the given name. Returns the created row as map. Note:
+; this returns the complete row only for postgresql. Other databases may return
+; only the keys. See next.jdbc.sql documentation.
 (defn create-account [ds name]
   (sql/insert! ds :account {:name name :balance 0}))
 
@@ -48,6 +50,8 @@
 
 ; Column names in the database and json names in requests and responses differ.
 ; These functions help translating between them.
+; TODO: find a more elegant way to do this. next.jdbc has sophisticated
+; translation functions. See also https://github.com/mklinik/bank/issues/10
 (def table-name-translation
     { :account/id :account-number
     , :account/name :name
