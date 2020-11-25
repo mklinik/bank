@@ -13,6 +13,7 @@ $ su -
 $ psql
 postgres=# CREATE ROLE mkl LOGIN;
 postgres=# ALTER ROLE mkl WITH CREATEDB;
+postgres=# ALTER ROLE mkl WITH password 'w00t';
 ```
 
 To run the server:

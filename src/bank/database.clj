@@ -1,5 +1,5 @@
 (ns bank.database
-  (:require [clojure.java.jdbc :as sql]))
+  (:require [next.jdbc :as sql]))
 
 (defn create-tables [db]
   (sql/execute! db ["create table if not exists account"
