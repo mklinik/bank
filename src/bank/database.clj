@@ -1,14 +1,16 @@
 (ns bank.database
-  (:require [next.jdbc :as sql]))
+  (:require
+    [next.jdbc :as jdbc]
+    [next.jdbc.sql :as sql]))
 
 (def default-db {:dbtype "postgresql" :host "localhost" :dbname "bank" :user "mkl" :password "w00t"})
-(def default-ds (sql/get-datasource default-db))
+(def default-ds (jdbc/get-datasource default-db))
 
 (defn drop-tables [ds]
-  (sql/execute! ds ["drop table if exists account"]))
+  (jdbc/execute! ds ["drop table if exists account"]))
 
 (defn create-tables [ds]
-  (sql/execute! ds [(str
+  (jdbc/execute! ds [(str
     "create table if not exists account"
     "( id serial not null"
     ", name text not null"
@@ -17,12 +19,11 @@
 
 ; TODO: take care of sql injection: how?
 (defn create-account [ds name]
-  (sql/execute! ds [(str
+  (jdbc/execute! ds [(str
     "insert into account values"
     "(DEFAULT"
     ",'" name "'"
     ", 0)")]))
 
 (defn get-account [ds id]
-  (sql/execute! ds [(str
-    "select * from account where id = '" id "'")]))
+  (sql/get-by-id ds "account" id))
