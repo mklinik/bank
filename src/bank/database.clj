@@ -27,6 +27,7 @@
 (defn create-account [ds name]
   (sql/insert! ds :account {:name name :balance 0}))
 
+; Returns nil if an account with the given id doesn't exist.
 (defn get-account [ds id]
   (sql/get-by-id ds :account id))
 
