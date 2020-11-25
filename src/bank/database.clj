@@ -13,10 +13,12 @@
     "( id serial not null"
     ", name text not null"
     ", balance money"
-    ", primary key (id));")]))
+    ", primary key (id))")]))
 
+; TODO: take care of sql injection: how?
 (defn create-account [ds name]
   (sql/execute! ds [(str
-    ""
-    ""
-    "")]))
+    "insert into account values"
+    "(DEFAULT"
+    ",'" name "'"
+    ", 0)")]))
