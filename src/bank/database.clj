@@ -8,10 +8,10 @@
 (def default-ds (jdbc/get-datasource default-db))
 
 (defn drop-tables [ds]
-  (jdbc/execute! ds ["drop table if exists account"]))
+  (jdbc/execute-one! ds ["drop table if exists account"]))
 
 (defn create-tables [ds]
-  (jdbc/execute! ds [(str
+  (jdbc/execute-one! ds [(str
     "create table if not exists account"
     "( id serial not null"
     ", name text not null"
@@ -32,7 +32,7 @@
   (sql/get-by-id ds :account id))
 
 (defn deposit [ds id amount]
-  (jdbc/execute! ds [(str
+  (jdbc/execute-one! ds [(str
     "update account"
     " set balance = balance + CAST(" amount " AS money)"
     " where id = " id)]))
