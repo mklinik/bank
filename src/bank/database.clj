@@ -31,6 +31,12 @@
 (defn get-account [ds id]
   (sql/get-by-id ds :account id))
 
+(defn deposit [ds id amount]
+  (jdbc/execute! ds [(str
+    "update account"
+    " set balance = balance + CAST(" amount " AS money)"
+    " where id = " id)]))
+
 ; Column names in the database and json names in requests and responses differ.
 ; These functions help translating between them.
 (def table-name-translation

@@ -33,3 +33,31 @@
     (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
     (is (= #:account{:id 2, :name "Mr. Orange", :balance 0.0} (get-account test-ds 2)))
     (is (= #:account{:id 3, :name "Mr. Black", :balance 0.0} (get-account test-ds 3)))))
+
+
+(deftest db-deposit-test
+  (testing "deposit some money to an account"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (deposit test-ds 1 20)
+    (is (= #:account{:id 1, :name "Mr. White", :balance 20.0} (get-account test-ds 1)))
+    (deposit test-ds 1 0.5)
+    (is (= #:account{:id 1, :name "Mr. White", :balance 20.5} (get-account test-ds 1)))
+    (deposit test-ds 1 0.05)
+    (is (= #:account{:id 1, :name "Mr. White", :balance 20.55} (get-account test-ds 1)))
+))
+
+(deftest db-deposit-only-one-test
+  (testing "deposit some money to an account, make sure that only this account changes"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Orange")
+    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= #:account{:id 2, :name "Mr. Orange", :balance 0.0} (get-account test-ds 2)))
+    (deposit test-ds 2 20)
+    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= #:account{:id 2, :name "Mr. Orange", :balance 20.0} (get-account test-ds 2)))
+))
