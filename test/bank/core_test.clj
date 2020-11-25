@@ -44,14 +44,15 @@
 
 
 (deftest create-two-accounts-test
-  (pending "create two accounts, they should get consecutive numbers"
-    (is (= {"account-number" "1"
+  (testing "create two accounts, they should get consecutive numbers"
+    (db/reset db/default-ds)
+    (is (= {"account-number" 1
             "name" "Mr. Orange"
-            "balance" 0}
+            "balance" 0.0}
            (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
-    (is (= {"account-number" "2"
+    (is (= {"account-number" 2
             "name" "Mr. White"
-            "balance" 0}
+            "balance" 0.0}
     (curl-post "http://localhost:3000/account" {"name" "Mr. White"})))))
 
 
