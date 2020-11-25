@@ -8,8 +8,7 @@
   (testing "after drop-tables, the database should be empty"
     (drop-tables default-ds)
     (create-tables default-ds)
-    (let [result (sql/execute! default-ds ["select * from account"])]
-      (is (= [] result)))))
+    (is (= [] (sql/execute! default-ds ["select * from account"])))))
 
 (deftest db-create-account-test
   (testing "create an account and see if it's there"
