@@ -29,12 +29,14 @@
 
 (defn retrieve-account
   ([request] (do
+    ; TODO: answer with 400 bad request if parseInt fails
+    ; TODO: find a way to test status codes; needs some intelligent curl usage
     (if-let [got-account-raw (db/get-account db/default-ds (Integer/parseInt (get-in request [:route-params :id])))]
       (let [got-account (db/db-to-json-names got-account-raw)]
         (->
           (res/response (json/encode got-account))
           (res/content-type "application/json")))
-      (res/not-found nil)))))
+      (res/not-found (json/encode {}))))))
 
 (defn deposit
   ([request] (do
