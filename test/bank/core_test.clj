@@ -132,4 +132,5 @@
     (is (= {:amount 100 :id 15} (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "15"}})))
     (is (= nil (bank/verify-deposit-parameters {:body {"amount" -100} :route-params {:id "15"}})))
     (is (= nil (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "abc"}})))
+    (is (= nil (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "1a5"}})))
 ))
