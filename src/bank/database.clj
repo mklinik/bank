@@ -22,3 +22,7 @@
     "(DEFAULT"
     ",'" name "'"
     ", 0)")]))
+
+(defn get-account [ds id]
+  (sql/execute! ds [(str
+    "select * from account where id = '" id "'")]))
