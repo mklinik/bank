@@ -21,8 +21,8 @@
 
 (defn create-account
   ([request] (do
-    (let [new-account-orig (db/create-account db/default-ds (get-in request [:body "name"]))
-          new-account (db/db-to-json-names new-account-orig)]
+    (let [new-account-raw (db/create-account db/default-ds (get-in request [:body "name"]))
+          new-account (db/db-to-json-names new-account-raw)]
       (->
         (res/response (json/encode new-account))
         (res/content-type "application/json"))))))
