@@ -31,11 +31,20 @@
 (defn get-account [ds id]
   (sql/get-by-id ds :account id))
 
+; Deposits the given amount to the account and returns the updated account.
+; Does not perform argument verification. Only pass positive amounts!
 (defn deposit [ds id amount]
-  (jdbc/execute-one! ds [(str
-    "update account"
-    " set balance = balance + CAST(" amount " AS money)"
-    " where id = " id)]))
+  ; We're using a transaction to make sure that the read after the update reads
+  ; exactly what was updated. No other transaction should come in between.
+  ; TODO: the default transaction isolation level of postgres is Read
+  ; Committed. Is this enough for our purpose?
+  (jdbc/with-transaction [conn ds]
+    ; important! use conn for all executions, not ds
+    (jdbc/execute-one! conn [(str
+      "update account"
+      " set balance = balance + CAST(" amount " AS money)"
+      " where id = " id)])
+    (sql/get-by-id conn :account id)))
 
 ; Column names in the database and json names in requests and responses differ.
 ; These functions help translating between them.
