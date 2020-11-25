@@ -1,13 +1,14 @@
 (ns bank.database-test
   (:require
     [clojure.test :refer :all]
-    [bank.database :as db]
+    [bank.database :refer :all]
     [next.jdbc :as sql]))
 
-(deftest db-query-cities-test
-  (testing "query the test database"
+(deftest db-empty-table
+  (testing "after drop-tables, the database should be empty"
     (let
-      [dbmeta {:dbtype "postgresql" :dbname "test" :user "mkl" :password "w00t"}
-       ds (sql/get-datasource dbmeta)
-       result (sql/execute! ds ["select * from cities"])]
-      (is (= () result)))))
+      [result (do
+        (drop-tables default-ds)
+        (create-tables default-ds)
+        (sql/execute! default-ds ["select * from account"]))]
+      (is (= [] result)))))
