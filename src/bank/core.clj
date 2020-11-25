@@ -27,16 +27,25 @@
         (res/response (json/encode new-account))
         (res/content-type "application/json"))))))
 
+(defn verify-retrieve-parameters [request]
+  (when-let [id-str (get-in request [:route-params :id])]
+    (try
+      {:id (Integer/parseInt id-str)}
+      (catch Exception e nil)))
+)
+
+; TODO: write unit test for malformed account id parameter
 (defn retrieve-account
   ([request] (do
-    ; TODO: answer with 400 bad request if parseInt fails
     ; TODO: find a way to test status codes; needs some intelligent curl usage
-    (if-let [got-account-raw (db/get-account db/default-ds (Integer/parseInt (get-in request [:route-params :id])))]
-      (let [got-account (db/db-to-json-names got-account-raw)]
-        (->
-          (res/response (json/encode got-account))
-          (res/content-type "application/json")))
-      (res/not-found (json/encode {}))))))
+    (if-let [params (verify-retrieve-parameters request)]
+      (if-let [got-account-raw (db/get-account db/default-ds (:id params))]
+        (let [got-account (db/db-to-json-names got-account-raw)]
+          (->
+            (res/response (json/encode got-account))
+            (res/content-type "application/json")))
+        (res/not-found (json/encode {})))
+      (res/bad-request (json/encode {}))))))
 
 ; The amount must be positive. Amount is passed in the json body.
 ; Ideally we would also verify that the given account id exists, but that is
