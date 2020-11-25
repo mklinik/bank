@@ -49,6 +49,7 @@
     (is (= #:account{:id 1, :name "Mr. White", :balance 20.55} (get-account test-ds 1)))
 ))
 
+
 (deftest db-deposit-only-one-test
   (testing "deposit some money to an account, make sure that only this account changes"
     (drop-tables test-ds)
@@ -60,4 +61,15 @@
     (deposit test-ds 2 20)
     (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
     (is (= #:account{:id 2, :name "Mr. Orange", :balance 20.0} (get-account test-ds 2)))
+))
+
+
+(deftest db-deposit-nonexistent-test
+  (testing "deposit some money to a nonexistent account"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= nil (deposit test-ds 100 20))) ; account 100 doesn't exist
+    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
 ))
