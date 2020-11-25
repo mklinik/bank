@@ -29,9 +29,11 @@
 
 (defn retrieve-account
   ([request] (do
-    (->
-      (res/response (json/encode {"TODO" "implement retrieve" "id" (get-in request [:route-params :id])}))
-      (res/content-type "application/json")))))
+    (let [got-account-raw (db/get-account db/default-ds (Integer/parseInt (get-in request [:route-params :id])))
+          got-account (db/db-to-json-names got-account-raw)]
+      (->
+        (res/response (json/encode got-account))
+        (res/content-type "application/json"))))))
 
 (defn deposit
   ([request] (do

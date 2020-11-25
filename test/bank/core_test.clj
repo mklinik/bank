@@ -53,16 +53,17 @@
     (is (= {"account-number" 2
             "name" "Mr. White"
             "balance" 0.0}
-    (curl-post "http://localhost:3000/account" {"name" "Mr. White"})))))
+           (curl-post "http://localhost:3000/account" {"name" "Mr. White"})))))
 
 
 (deftest create-and-then-retrieve-test
-  (pending "create an account and then retieve it"
-    (is (= {"account-number" "1"
+  (testing "create an account and then retieve it"
+    (db/reset db/default-ds)
+    (is (= {"account-number" 1
             "name" "Mr. Orange"
-            "balance" 0}
+            "balance" 0.0}
            (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))
-    (is (= {"account-number" "1"
+    (is (= {"account-number" 1
             "name" "Mr. Orange"
-            "balance" 0}
+            "balance" 0.0}
            (curl-get  "http://localhost:3000/account/1")))))
