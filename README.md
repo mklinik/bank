@@ -34,3 +34,9 @@ To run the tests:
 ```
 $ lein test
 ```
+
+To run only tests in one namespace
+
+```
+$ lein test bank.database-test
+```
