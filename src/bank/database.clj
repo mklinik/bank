@@ -1,6 +1,6 @@
 (ns bank.database
   (:require
-    [clojure.set :refer [rename-keys]]
+    [clojure.set :refer [rename-keys, map-invert]]
     [next.jdbc :as jdbc]
     [next.jdbc.sql :as sql]))
 
@@ -32,11 +32,14 @@
 
 ; Column names in the database and json names in requests and responses differ.
 ; These functions help translating between them.
-(defn db-to-json-names [m]
-  (rename-keys m
+(def table-name-translation
     { :account/id :account-number
     , :account/name :name
     , :account/balance :balance
-    }))
+    })
 
-(defn json-to-db-names [m] m)
+(defn db-to-json-names [m]
+  (rename-keys m table-name-translation))
+
+(defn json-to-db-names [m]
+  (rename-keys m (map-invert table-name-translation)))
