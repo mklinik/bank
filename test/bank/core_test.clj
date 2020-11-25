@@ -125,3 +125,11 @@
             "balance" 0.0}
            (curl-get  "http://localhost:3000/account/1")))
 ))
+
+
+(deftest verify-deposit-parameters-test
+  (testing "verify the parameters of a request to the deposit handler"
+    (is (= {:amount 100 :id 15} (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "15"}})))
+    (is (= nil (bank/verify-deposit-parameters {:body {"amount" -100} :route-params {:id "15"}})))
+    (is (= nil (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "abc"}})))
+))

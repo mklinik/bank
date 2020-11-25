@@ -42,15 +42,20 @@
 ; Ideally we would also verify that the given account id exists, but that is
 ; implicitly handelled when the deposit command returns nil as result.
 (defn verify-deposit-parameters [request]
-  (> (get-in request [:body "amount"]) 0))
+  (when-let [amount (get-in request [:body "amount"])]
+    (when-let [id-str (get-in request [:route-params :id])]
+      (try
+        (when (> amount 0) {:amount amount :id (Integer/parseInt id-str)})
+        (catch Exception e nil)))
+))
 
 (defn deposit
   ([request] (do
-    (if (verify-deposit-parameters request)
+    (if-let [params (verify-deposit-parameters request)]
       (if-let [got-account-raw (db/deposit
                   db/default-ds
-                  (Integer/parseInt (get-in request [:route-params :id]))
-                  (get-in request [:body "amount"]))]
+                  (:id params)
+                  (:amount params))]
         (let [got-account (db/db-to-json-names got-account-raw)]
           (->
             (res/response (json/encode got-account))
