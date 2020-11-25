@@ -1,5 +1,6 @@
 (ns bank.database
   (:require
+    [clojure.set :refer [rename-keys]]
     [next.jdbc :as jdbc]
     [next.jdbc.sql :as sql]))
 
@@ -17,9 +18,25 @@
     ", balance money"
     ", primary key (id))")]))
 
+(defn reset [ds] (do
+  (drop-tables ds)
+  (create-tables ds)))
+
 ; TODO: take care of sql injection: how?
+; Create an account with the given name. Returns the created row as map.
 (defn create-account [ds name]
-  (sql/insert! ds "account" {:name name :balance 0}))
+  (sql/insert! ds :account {:name name :balance 0}))
 
 (defn get-account [ds id]
-  (sql/get-by-id ds "account" id))
+  (sql/get-by-id ds :account id))
+
+; Column names in the database and json names in requests and responses differ.
+; These functions help translating between them.
+(defn table-to-json-names [m]
+  (rename-keys m
+    { :account/id :account-number
+    , :account/name :name
+    , :account/balance :balance
+    }))
+
+(defn json-to-table-names [m] m)

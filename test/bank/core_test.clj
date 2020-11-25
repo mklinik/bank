@@ -4,6 +4,7 @@
     [clojure.java.shell :refer :all]
     [cheshire.core :as json]
     [bank.core :as bank]
+    [bank.database :as db]
     [bank.util :refer :all]
     ))
 
@@ -35,9 +36,10 @@
 
 (deftest create-account-test
   (testing "create an account and check the returned response"
+    (db/reset db/default-ds)
     (is (= {"account-number" 1
             "name" "Mr. Orange"
-            "balance" 0}
+            "balance" 0.0}
            (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})))))
 
 

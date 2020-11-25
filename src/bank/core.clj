@@ -5,7 +5,8 @@
   (:require [ring.util.request :as req])
   (:require [ring.middleware.json :refer :all])
   (:require [compojure.route :as route])
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json])
+  (:require [bank.database :as db]))
 
 ; For debugging. Don't wrap this in any middleware.
 (defn echo
@@ -21,12 +22,11 @@
 (defn create-account
   ([request] (do
     (println "create account for" (get-in request [:body "name"]))
-    (->
-      (res/response (json/encode
-        {"account-number" 1
-         "balance" 0
-         "name" (get-in request [:body "name"])}))
-      (res/content-type "application/json")))))
+    (let [new-account-orig (db/create-account db/default-ds (get-in request [:body "name"]))
+          new-account (db/table-to-json-names new-account-orig)]
+      (->
+        (res/response (json/encode new-account))
+        (res/content-type "application/json"))))))
 
 (defn retrieve-account
   ([request] (do
