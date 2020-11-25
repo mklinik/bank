@@ -93,3 +93,18 @@
             "balance" 0.0}
            (curl-get  "http://localhost:3000/account/4")))
 ))
+
+
+(deftest deposit-test
+  (testing "deposit money to an account"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
+))

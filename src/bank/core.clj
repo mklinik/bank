@@ -38,11 +38,23 @@
           (res/content-type "application/json")))
       (res/not-found (json/encode {}))))))
 
+; The amount must be positive. Amount is passed in the json body.
+; Ideally we would also verify that the given account id exists, but that is
+; implicitly handelled when the deposit command returns nil as result.
+(defn verify-deposit-parameters [request]
+  (> (get-in request [:body "amount"]) 0))
+
 (defn deposit
   ([request] (do
-    (->
-      (res/response (json/encode {"TODO" "implement deposit"}))
-      (res/content-type "application/json")))))
+    (if-let [got-account-raw (db/deposit
+                db/default-ds
+                (Integer/parseInt (get-in request [:route-params :id]))
+                (get-in request [:body "amount"]))]
+      (let [got-account (db/db-to-json-names got-account-raw)]
+        (->
+          (res/response (json/encode got-account))
+          (res/content-type "application/json")))
+      (res/not-found (json/encode {}))))))
 
 ; wrap-json-body must be on the innermost level, because it consumes the :body
 ; input stream. defroutes tries routes until the first one matches. If multiple
