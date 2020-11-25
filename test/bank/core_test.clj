@@ -12,13 +12,11 @@
 ; TODO: We also want to clear the database, so each test runs in a fresh database
 ; TODO: Find a way to test persistence between server restarts
 (defn with-ring [f]
-  (let [server (ring.adapter.jetty/run-jetty
-                      bank/app
-                      {:port 3000 :join? false})]
-        (try
-          (f)
-          (finally
-            (.stop server)))))
+  (let [server (ring.adapter.jetty/run-jetty bank/app {:port 3000 :join? false})]
+    (try
+      (f)
+      (finally
+        (.stop server)))))
 
 ; restart the server for each test
 (use-fixtures :each with-ring)
