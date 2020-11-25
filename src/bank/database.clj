@@ -19,11 +19,7 @@
 
 ; TODO: take care of sql injection: how?
 (defn create-account [ds name]
-  (jdbc/execute! ds [(str
-    "insert into account values"
-    "(DEFAULT"
-    ",'" name "'"
-    ", 0)")]))
+  (sql/insert! ds "account" {:name name :balance 0}))
 
 (defn get-account [ds id]
   (sql/get-by-id ds "account" id))
