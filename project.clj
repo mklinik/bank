@@ -9,6 +9,7 @@
                  [ring/ring-json "0.5.0"]
                  [ring/ring-jetty-adapter "1.8.2"]
                  [compojure "1.6.2"]
+                 [org.clojure/java.jdbc "0.7.11"]
                  [cheshire "5.10.0"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler bank.core/app}
