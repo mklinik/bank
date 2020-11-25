@@ -1,7 +1,7 @@
 # this file is supposed to be sourced
 
 request-retrieve-account() {
-  curl -v 'http://localhost:3000/account/42'
+  curl -v 'http://localhost:3000/account/1'
   echo ""
 }
 
