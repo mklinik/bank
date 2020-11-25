@@ -21,7 +21,6 @@
 
 (defn create-account
   ([request] (do
-    (println "create account for" (get-in request [:body "name"]))
     (let [new-account-orig (db/create-account db/default-ds (get-in request [:body "name"]))
           new-account (db/db-to-json-names new-account-orig)]
       (->
@@ -30,14 +29,12 @@
 
 (defn retrieve-account
   ([request] (do
-    (println "retrieve account" (get-in request [:route-params :id]))
     (->
       (res/response (json/encode {"TODO" "implement retrieve" "id" (get-in request [:route-params :id])}))
       (res/content-type "application/json")))))
 
 (defn deposit
   ([request] (do
-    (println "deposit to" (get-in request [:route-params :id]) (get-in request [:body]))
     (->
       (res/response (json/encode {"TODO" "implement deposit"}))
       (res/content-type "application/json")))))
