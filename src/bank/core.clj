@@ -46,15 +46,17 @@
 
 (defn deposit
   ([request] (do
-    (if-let [got-account-raw (db/deposit
-                db/default-ds
-                (Integer/parseInt (get-in request [:route-params :id]))
-                (get-in request [:body "amount"]))]
-      (let [got-account (db/db-to-json-names got-account-raw)]
-        (->
-          (res/response (json/encode got-account))
-          (res/content-type "application/json")))
-      (res/not-found (json/encode {}))))))
+    (if (verify-deposit-parameters request)
+      (if-let [got-account-raw (db/deposit
+                  db/default-ds
+                  (Integer/parseInt (get-in request [:route-params :id]))
+                  (get-in request [:body "amount"]))]
+        (let [got-account (db/db-to-json-names got-account-raw)]
+          (->
+            (res/response (json/encode got-account))
+            (res/content-type "application/json")))
+        (res/not-found (json/encode {})))
+      (res/bad-request (json/encode {}))))))
 
 ; wrap-json-body must be on the innermost level, because it consumes the :body
 ; input stream. defroutes tries routes until the first one matches. If multiple

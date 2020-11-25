@@ -108,3 +108,20 @@
             "balance" 100.0 }
            (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
 ))
+
+
+(deftest deposit-negative-test
+  (testing "try to deposit a negative amount"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {}
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" -100})))
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/1")))
+))
