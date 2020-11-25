@@ -16,6 +16,13 @@ postgres=# ALTER ROLE mkl WITH CREATEDB;
 postgres=# ALTER ROLE mkl WITH password 'w00t';
 ```
 
+After you have a role, create the databases for test and production
+
+```
+$ createdb bank
+$ createdb bank-test
+```
+
 To run the server:
 
 ```
