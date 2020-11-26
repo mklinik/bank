@@ -51,10 +51,10 @@
 ; nil as result.
 (defn verify-deposit-parameters [request]
   (when-let [amount (get-in request [:body "amount"])]
-    (when-let [id-str (get-in request [:route-params :id])]
-      (try
-        (when (> amount 0) {:amount amount :id (Integer/parseInt id-str)})
-        (catch Exception e nil)))
+  (when-let [id-str (get-in request [:route-params :id])]
+    (try
+      (when (> amount 0) {:amount amount :id (Integer/parseInt id-str)})
+      (catch Exception e nil)))
 ))
 
 (defn deposit
@@ -64,9 +64,9 @@
                   db/default-ds
                   (:id params)
                   (:amount params))]
-          (->
-            (res/response (json/encode got-account))
-            (res/content-type "application/json"))
+        (->
+          (res/response (json/encode got-account))
+          (res/content-type "application/json"))
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
@@ -76,10 +76,10 @@
 ; nil as result.
 (defn verify-withdraw-parameters [request]
   (when-let [amount (get-in request [:body "amount"])]
-    (when-let [id-str (get-in request [:route-params :id])]
-      (try
-        (when (> amount 0) {:amount amount :id (Integer/parseInt id-str)})
-        (catch Exception e nil)))
+  (when-let [id-str (get-in request [:route-params :id])]
+    (try
+      (when (> amount 0) {:amount amount :id (Integer/parseInt id-str)})
+      (catch Exception e nil)))
 ))
 
 (defn withdraw
@@ -89,9 +89,9 @@
                   db/default-ds
                   (:id params)
                   (:amount params))]
-          (->
-            (res/response (json/encode got-account))
-            (res/content-type "application/json"))
+        (->
+          (res/response (json/encode got-account))
+          (res/content-type "application/json"))
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
