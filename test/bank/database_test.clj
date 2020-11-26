@@ -13,15 +13,32 @@
   (testing "after drop-tables, the database should be empty"
     (drop-tables test-ds)
     (create-tables test-ds)
-    (is (= [] (jdbc/execute! test-ds ["select * from account"])))))
+    (is (= [] (jdbc/execute! test-ds ["select * from account"])))
+    (is (= [] (jdbc/execute! test-ds ["select * from audit_log"])))
+    (is (= [] (jdbc/execute! test-ds ["select * from next_sequence_number"])))))
 
 (deftest db-create-account-test
   (testing "create an account and see if it's there"
-    (drop-tables test-ds)
-    (create-tables test-ds)
+    (reset test-ds)
     (create-account test-ds "Mr. White")
-    (let [result (jdbc/execute! test-ds ["select * from account"] {:builder-fn as-unqualified-kebab-maps})]
-      (is (= [{:account-number 1, :name "Mr. White", :balance 0.0}] result)))))
+    (is (= [{:account-number 1, :name "Mr. White", :balance 0.0}]
+           (jdbc/execute! test-ds ["select * from account"] {:builder-fn as-unqualified-kebab-maps})))
+    (is (= [#:next_sequence_number{:account_number 1, :next_sequence_number 0}]
+           (jdbc/execute! test-ds ["select * from next_sequence_number"]))))
+
+  (testing "create two accounts and see if they are there"
+    (reset test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Orange")
+    (is (= [{:account-number 1, :name "Mr. White", :balance 0.0}
+            {:account-number 2, :name "Mr. Orange", :balance 0.0}
+           ]
+           (jdbc/execute! test-ds ["select * from account"] {:builder-fn as-unqualified-kebab-maps})))
+    (is (= [#:next_sequence_number{:account_number 1, :next_sequence_number 0}
+            #:next_sequence_number{:account_number 2, :next_sequence_number 0}]
+           (jdbc/execute! test-ds ["select * from next_sequence_number"]))))
+)
+
 
 (deftest db-get-account-test
   (testing "create some accounts and query them"

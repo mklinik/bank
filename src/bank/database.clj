@@ -9,15 +9,36 @@
 (def default-ds (jdbc/get-datasource default-db))
 
 (defn drop-tables [ds]
-  (jdbc/execute-one! ds ["drop table if exists account"]))
+  (do
+    (jdbc/execute-one! ds ["drop table if exists account"])
+    (jdbc/execute-one! ds ["drop table if exists audit_log"])
+    (jdbc/execute-one! ds ["drop table if exists next_sequence_number"])))
 
 (defn create-tables [ds]
-  (jdbc/execute-one! ds [(str
-    "create table if not exists account"
-    "( account_number serial not null"
-    ", name text not null"
-    ", balance money"
-    ", primary key (account_number))")]))
+  (do
+    (jdbc/execute-one! ds [(str
+      "create table if not exists account"
+      "( account_number serial not null"
+      ", name text not null"
+      ", balance money"
+      ", primary key (account_number))")])
+    (jdbc/execute-one! ds [(str
+      "create table if not exists audit_log"
+      "( sequence_number integer not null"
+      ", account_number integer not null"
+      ", debit integer"
+      ", credit integer"
+      ", description text not null"
+      ")"
+      )])
+    ; We could store it in account directly. This has advantages and
+    ; disadvantages. For now, let's make a separate table.
+    (jdbc/execute-one! ds [(str
+     "create table if not exists next_sequence_number"
+     "( account_number integer not null"
+     ", next_sequence_number integer not null"
+     ")")])
+))
 
 (defn reset [ds] (do
   (drop-tables ds)
@@ -27,7 +48,12 @@
 ; this returns the complete row only for postgresql. Other databases may return
 ; only the keys. See next.jdbc.sql documentation.
 (defn create-account [ds name]
-  (sql/insert! ds :account {:name name :balance 0} {:builder-fn as-unqualified-kebab-maps}))
+  ; we need :isolation :serializable because there should not come any
+  ; transaction between account creation and next_sequence_number creation
+  (jdbc/with-transaction [conn ds {:isolation :serializable}]
+    (let [result (sql/insert! conn :account {:name name :balance 0} {:builder-fn as-unqualified-kebab-maps})]
+        (sql/insert! conn :next_sequence_number {:account_number (:account-number result) :next_sequence_number 0})
+        result)))
 
 ; Returns nil if an account with the given id doesn't exist.
 (defn get-account [ds id]
@@ -95,3 +121,18 @@
         " where account_number = ?") amount receiver-id])
       (get-account conn sender-id))
     (catch Exception e nil)))
+
+
+; An audit record is a map with the following keys. Note the underscores in key
+; names, they must match the column names in the audit table
+;  :account_number int -- the account number this audit record refers to
+;  :debit int  -- optional, only if money got deducted in this transaction
+;  :credit int -- optional, only if money got added in this transaction
+;  :description str -- a description of the transaction as per the specification
+;
+; This function is supposed to be used within the transaction of one of the
+; database operations. No other operation should come between! This also means
+; that all transactions should be serializable.
+(defn record-audit-log [ds audit-record]
+  nil
+)
