@@ -101,13 +101,15 @@
 ; The where statement assures that balance can't fall below zero, and that the
 ; amount is positive.
 (defn withdraw [ds id amount]
-  (jdbc/with-transaction [conn ds]
-    (jdbc/execute-one! conn [(str
+  (jdbc/with-transaction [conn ds {:isolation :serializable}]
+    (when
+      (= 1 (:next.jdbc/update-count (jdbc/execute-one! conn [(str
       "update account"
       " set balance = balance - ?::numeric::money"
       " where account_number = ?"
       " and balance >= ?::numeric::money"
-      " and ? > 0") amount id amount amount])
+      " and ? > 0") amount id amount amount])))
+      (record-audit-log conn {:account_number id, :debit amount, :description "withdraw"}))
     (get-account conn id)))
 
 

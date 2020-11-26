@@ -126,14 +126,22 @@
 
 (deftest withdraw-test
   (testing "withdraw money from an account"
-    (drop-tables test-ds)
-    (create-tables test-ds)
+    (reset test-ds)
     (create-account test-ds "Mr. White")
     (deposit test-ds 1 20)
     (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (withdraw test-ds 1 5)))
     (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (get-account test-ds 1)))
-    (is (= {:account-number 1, :name "Mr. White", :balance 5.0} (withdraw test-ds 1 10)))
-))
+    (is (= {:account-number 1, :name "Mr. White", :balance 5.0} (withdraw test-ds 1 10))))
+  (testing "deposit then withdraw money from an account and check the audit log"
+    (reset test-ds)
+    (create-account test-ds "Mr. White")
+    (deposit test-ds 1 20)
+    (withdraw test-ds 1 5)
+    (is (= [#:audit_log{:sequence_number 0 :account_number 1 :debit nil :credit  20 :description "deposit"}
+           ,#:audit_log{:sequence_number 1 :account_number 1 :debit   5 :credit nil :description "withdraw"}
+           ]
+           (jdbc/execute! test-ds ["select * from audit_log"]))))
+)
 
 
 (deftest withdraw-too-much-test
