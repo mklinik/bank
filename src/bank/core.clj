@@ -127,6 +127,16 @@
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
+(defn get-audit-log
+  ([request] (do
+    (if-let [params (verify-retrieve-parameters request)]
+      (if-let [audit-log (db/get-audit-log db/default-ds (:id params))]
+        (->
+          (res/response (json/encode audit-log))
+          (res/content-type "application/json"))
+        (res/not-found (json/encode {})))
+      (res/bad-request (json/encode {}))))))
+
 ; wrap-json-body must be on the innermost level, because it consumes the :body
 ; input stream. defroutes tries routes until the first one matches. If multiple
 ; rules use wrap-json-body on the outside, only the first one gets an actual
@@ -138,6 +148,7 @@
   (POST "/account/:id/withdraw" [] (wrap-json-body withdraw))
   (POST "/account/:id/send" [] (wrap-json-body transfer))
   (GET "/account/:id" [] retrieve-account)
+  (GET "/account/:id/audit" [] get-audit-log)
   (route/not-found "Page not found"))
 
 (def app (->

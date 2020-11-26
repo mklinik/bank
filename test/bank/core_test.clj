@@ -308,3 +308,42 @@
             "balance" 100.0}
            (curl-get  "http://localhost:3000/account/1"))))
 )
+
+
+
+(deftest get-audit-log-test
+  (testing "the audit log as it is in the spec"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"}) ; account 1
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Black"})  ; account 2 (800 in the spec)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Pink"})   ; account 3 (900 in the spec)
+    (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})
+    (curl-post "http://localhost:3000/account/2/deposit" {"amount" 100})
+    (curl-post "http://localhost:3000/account/1/send" {"amount" 5, "account-number" 3})
+    (curl-post "http://localhost:3000/account/2/send" {"amount" 10, "account-number" 1})
+    (curl-post "http://localhost:3000/account/1/withdraw" {"amount" 20})
+
+    (is (= [
+              {
+                  "sequence" 3,
+                  "debit" 20,
+                  "description" "withdraw"
+              },
+              {
+                  "sequence" 2,
+                  "credit" 10,
+                  "description" "receive from #2"
+              },
+              {
+                  "sequence" 1,
+                  "debit" 5,
+                  "description" "send to #3"
+              },
+              {
+                  "sequence" 0,
+                  "credit" 100,
+                  "description" "deposit"
+              }
+           ]
+           (curl-get "http://localhost:3000/account/1/audit")))
+))

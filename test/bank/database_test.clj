@@ -256,10 +256,17 @@
     (deposit test-ds 1 20)
     (transfer test-ds 1 2 5)
     (withdraw test-ds 2 5)
-    (is (= [{:sequence 1, :debit   5, :credit nil, :description "send to #2"}
-            {:sequence 0, :debit nil, :credit  20, :description "deposit"}]
+    (is (= [{:sequence 1, :debit   5, :description "send to #2"}
+            {:sequence 0, :credit 20, :description "deposit"}]
            (get-audit-log test-ds 1)))
-    (is (= [{:sequence 1, :debit   5, :credit nil, :description "withdraw"}
-            {:sequence 0, :debit nil, :credit   5, :description "receive from #1"}]
+    (is (= [{:sequence 1, :debit   5, :description "withdraw"}
+            {:sequence 0, :credit  5, :description "receive from #1"}]
            (get-audit-log test-ds 2)))
+))
+
+
+(deftest filter-map-nil-test
+  (testing "filter all values from a map that are nil"
+    (is (= {:a 5, :b "cat", :c false}
+           (filter-nil-values {:z nil, :a 5, :x nil, :b "cat", :c false})))
 ))

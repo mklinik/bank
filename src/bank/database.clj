@@ -65,12 +65,17 @@
 )
 
 
+; remove nil values from a map
+; https://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map
+(defn filter-nil-values [m]
+  (into {} (remove (comp nil? second) m)))
+
 (defn get-audit-log [ds id]
-  (jdbc/execute! ds [(str
+  (mapv filter-nil-values (jdbc/execute! ds [(str
     "select sequence, debit, credit, description"
     " from audit_log where account_number = ?"
     " order by sequence desc") id]
-    {:builder-fn as-unqualified-kebab-maps}))
+    {:builder-fn as-unqualified-kebab-maps})))
 
 ; Create an account with the given name. Returns the created row as map. Note:
 ; this returns the complete row only for postgresql. Other databases may return
