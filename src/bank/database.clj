@@ -26,8 +26,8 @@
       "create table if not exists audit_log"
       "( sequence_number integer not null"
       ", account_number integer not null"
-      ", debit integer"
-      ", credit integer"
+      ", debit integer default null"
+      ", credit integer default null"
       ", description text not null"
       ")"
       )])
@@ -44,9 +44,29 @@
   (drop-tables ds)
   (create-tables ds)))
 
+; An audit record is a map with the following keys. Note the underscores in key
+; names, they must match the column names in the audit table
+;  :account_number int -- the account number this audit record refers to
+;  :debit int  -- optional, only if money got deducted in this transaction
+;  :credit int -- optional, only if money got added in this transaction
+;  :description str -- a description of the transaction as per the specification
+;
+; This function is supposed to be used within the transaction of one of the
+; database operations. No other operation should come between! This also means
+; that all transactions should be serializable.
+(defn record-audit-log [conn audit-record]
+  (let [next-sequence-number (:next_sequence_number/next_sequence_number
+    (jdbc/execute-one! conn [(str
+    "update next_sequence_number"
+    " set next_sequence_number = next_sequence_number + 1"
+    " where account_number = ?"
+    " returning next_sequence_number") (:account_number audit-record)]))]
+    (sql/insert! conn :audit_log (assoc audit-record :sequence_number (- next-sequence-number 1))))
+)
+
 ; Create an account with the given name. Returns the created row as map. Note:
 ; this returns the complete row only for postgresql. Other databases may return
-; only the keys. See next.jdbc.sql documentation.
+; only the keys. See next.jdbc.sql documentation. See also the RETURNING clause.
 (defn create-account [ds name]
   ; we need :isolation :serializable because there should not come any
   ; transaction between account creation and next_sequence_number creation
@@ -66,13 +86,15 @@
   ; exactly what was updated. No other transaction should come in between.
   ; TODO: the default transaction isolation level of postgres is Read
   ; Committed. Is this enough for our purpose?
-  (jdbc/with-transaction [conn ds]
+  (jdbc/with-transaction [conn ds {:isolation :serializable}]
     ; important! use conn for all executions, not ds
-    (jdbc/execute-one! conn [(str
+    (when
+      (= 1 (:next.jdbc/update-count (jdbc/execute-one! conn [(str
       "update account"
       " set balance = balance + ?::numeric::money"
       " where account_number = ?"
-      " and ? > 0") amount id amount])
+      " and ? > 0") amount id amount])))
+      (record-audit-log conn {:account_number id, :credit amount, :description "deposit"}))
     (get-account conn id)))
 
 
@@ -121,18 +143,3 @@
         " where account_number = ?") amount receiver-id])
       (get-account conn sender-id))
     (catch Exception e nil)))
-
-
-; An audit record is a map with the following keys. Note the underscores in key
-; names, they must match the column names in the audit table
-;  :account_number int -- the account number this audit record refers to
-;  :debit int  -- optional, only if money got deducted in this transaction
-;  :credit int -- optional, only if money got added in this transaction
-;  :description str -- a description of the transaction as per the specification
-;
-; This function is supposed to be used within the transaction of one of the
-; database operations. No other operation should come between! This also means
-; that all transactions should be serializable.
-(defn record-audit-log [ds audit-record]
-  nil
-)

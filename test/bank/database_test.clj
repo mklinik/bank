@@ -54,8 +54,7 @@
 
 (deftest db-deposit-test
   (testing "deposit some money to an account"
-    (drop-tables test-ds)
-    (create-tables test-ds)
+    (reset test-ds)
     (create-account test-ds "Mr. White")
     (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
     (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (deposit test-ds 1 20)))
@@ -63,8 +62,21 @@
     (is (= {:account-number 1, :name "Mr. White", :balance 20.5} (deposit test-ds 1 0.5)))
     (is (= {:account-number 1, :name "Mr. White", :balance 20.5} (get-account test-ds 1)))
     (is (= {:account-number 1, :name "Mr. White", :balance 20.55} (deposit test-ds 1 0.05)))
-    (is (= {:account-number 1, :name "Mr. White", :balance 20.55} (get-account test-ds 1)))
-))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.55} (get-account test-ds 1))))
+
+  (testing "deposit some money to an account and check the audit log"
+    (reset test-ds)
+    (create-account test-ds "Mr. White")
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (deposit test-ds 1 20)))
+    (is (= [#:audit_log
+            {:sequence_number 0
+             :account_number 1
+             :debit nil
+             :credit 20
+             :description "deposit"
+            }]
+           (jdbc/execute! test-ds ["select * from audit_log"]))))
+)
 
 
 (deftest db-deposit-only-one-test
