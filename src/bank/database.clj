@@ -35,7 +35,7 @@
   (sql/get-by-id ds :account id "account_number" {:builder-fn as-unqualified-kebab-maps}))
 
 ; Deposits the given amount to the account and returns the updated account.
-; Does not perform argument verification. Only pass positive amounts!
+; When a negative amount is given, this is a noop.
 (defn deposit [ds id amount]
   ; We're using a transaction to make sure that the read after the update reads
   ; exactly what was updated. No other transaction should come in between.
@@ -46,7 +46,8 @@
     (jdbc/execute-one! conn [(str
       "update account"
       " set balance = balance + ?::numeric::money"
-      " where account_number = ?") amount id])
+      " where account_number = ?"
+      " and ? > 0") amount id amount])
     (get-account conn id)))
 
 

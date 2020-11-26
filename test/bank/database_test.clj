@@ -64,6 +64,17 @@
 ))
 
 
+(deftest db-deposit-negative-test
+  (testing "deposit a negative amount is a noop"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (deposit test-ds 1 -20)
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+))
+
+
 (deftest db-deposit-nonexistent-test
   (testing "deposit some money to a nonexistent account"
     (drop-tables test-ds)
