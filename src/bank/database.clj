@@ -64,7 +64,8 @@
 
 
 ; Returns empty map when parameter verification fails
-; TODO: what is a consistent way of handling errors? See https://github.com/mklinik/bank/issues/8
+; TODO: what is a consistent way of handling errors? See
+; https://github.com/mklinik/bank/issues/8
 (defn transfer [ds sender-id receiver-id amount]
   ; I think we need isolation level serializable in for this transaction, but I
   ; need to contemplate more about isolation levels.
