@@ -82,3 +82,36 @@
     (create-account test-ds "Mr. White")
     (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (jdbc/execute-one! test-ds ["select * from account where account_number = ?" 1] {:builder-fn as-unqualified-kebab-maps})))
 ))
+
+
+(deftest withdraw-test
+  (testing "withdraw money from an account"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (deposit test-ds 1 20)
+    (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (withdraw test-ds 1 5)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 5.0} (withdraw test-ds 1 10)))
+))
+
+
+(deftest withdraw-too-much-test
+  (testing "withdraw more money from an account than whats on it"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (deposit test-ds 1 20)
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (withdraw test-ds 1 100)))
+))
+
+
+(deftest withdraw-from-non-existing-account-test
+  (testing "withdraw money from a non-existing account should return nil"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (deposit test-ds 1 20)
+    (is (= nil (withdraw test-ds 47 100)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (withdraw test-ds 1 100)))
+))
