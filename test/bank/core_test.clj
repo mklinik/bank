@@ -134,3 +134,80 @@
     (is (= nil (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "abc"}})))
     (is (= nil (bank/verify-deposit-parameters {:body {"amount" 100} :route-params {:id "1a5"}})))
 ))
+
+
+(deftest withdraw-test
+  (testing "withdraw money from an account"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 75.0 }
+           (curl-post "http://localhost:3000/account/1/withdraw" {"amount" 25})))
+))
+
+
+(deftest withdraw-too-much-test
+  (testing "withdraw money too much money from an account should be a noop"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/withdraw" {"amount" 2000})))
+))
+
+
+(deftest withdraw-negative-test
+  (testing "withdraw a negative amount should fail; actually it responds with 400, which we should test for"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
+    (is (= {}
+           (curl-post "http://localhost:3000/account/1/withdraw" {"amount" -2})))
+))
+
+
+(deftest withdraw-from-non-existing-account-test
+  (testing "withdraw from a nonexistent account should fail"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
+    (is (= {}
+           (curl-post "http://localhost:3000/account/47/withdraw" {"amount" 20})))
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1")))
+))
+
+
+(deftest withdraw-with-invalid-account-number-test
+  (testing "withdraw parameter is not a number"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0 }
+           (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})))
+    (is (= {}
+           (curl-post "http://localhost:3000/account/abcd/withdraw" {"amount" 20})))
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1")))
+))
