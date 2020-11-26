@@ -2,7 +2,9 @@
   (:require
     [clojure.test :refer :all]
     [bank.database :refer :all]
-    [next.jdbc :as jdbc]))
+    [next.jdbc :as jdbc]
+    [next.jdbc.result-set :refer :all]
+    [bank.util :refer :all]))
 
 (def test-db {:dbtype "postgresql" :host "localhost" :dbname "bank-test" :user "mkl" :password "w00t"})
 (def test-ds (jdbc/get-datasource test-db))
@@ -18,10 +20,8 @@
     (drop-tables test-ds)
     (create-tables test-ds)
     (create-account test-ds "Mr. White")
-    (let [result (jdbc/execute! test-ds ["select * from account"])]
-      ; today I learned something new: map namespace syntax. The following two are equivalent:
-      (is (= [{:account/id 1, :account/name "Mr. White", :account/balance 0.0}] result))
-      (is (= [#:account{:id 1, :name "Mr. White", :balance 0.0}])))))
+    (let [result (jdbc/execute! test-ds ["select * from account"] {:builder-fn as-unqualified-kebab-maps})]
+      (is (= [{:account-number 1, :name "Mr. White", :balance 0.0}] result)))))
 
 (deftest db-get-account-test
   (testing "create some accounts and query them"
@@ -30,9 +30,9 @@
     (create-account test-ds "Mr. White")
     (create-account test-ds "Mr. Orange")
     (create-account test-ds "Mr. Black")
-    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
-    (is (= #:account{:id 2, :name "Mr. Orange", :balance 0.0} (get-account test-ds 2)))
-    (is (= #:account{:id 3, :name "Mr. Black", :balance 0.0} (get-account test-ds 3)))))
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= {:account-number 2, :name "Mr. Orange", :balance 0.0} (get-account test-ds 2)))
+    (is (= {:account-number 3, :name "Mr. Black", :balance 0.0} (get-account test-ds 3)))))
 
 
 (deftest db-deposit-test
@@ -40,13 +40,13 @@
     (drop-tables test-ds)
     (create-tables test-ds)
     (create-account test-ds "Mr. White")
-    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
-    (is (= #:account{:id 1, :name "Mr. White", :balance 20.0} (deposit test-ds 1 20)))
-    (is (= #:account{:id 1, :name "Mr. White", :balance 20.0} (get-account test-ds 1)))
-    (is (= #:account{:id 1, :name "Mr. White", :balance 20.5} (deposit test-ds 1 0.5)))
-    (is (= #:account{:id 1, :name "Mr. White", :balance 20.5} (get-account test-ds 1)))
-    (is (= #:account{:id 1, :name "Mr. White", :balance 20.55} (deposit test-ds 1 0.05)))
-    (is (= #:account{:id 1, :name "Mr. White", :balance 20.55} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (deposit test-ds 1 20)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.5} (deposit test-ds 1 0.5)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.5} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.55} (deposit test-ds 1 0.05)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.55} (get-account test-ds 1)))
 ))
 
 
@@ -56,11 +56,11 @@
     (create-tables test-ds)
     (create-account test-ds "Mr. White")
     (create-account test-ds "Mr. Orange")
-    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
-    (is (= #:account{:id 2, :name "Mr. Orange", :balance 0.0} (get-account test-ds 2)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= {:account-number 2, :name "Mr. Orange", :balance 0.0} (get-account test-ds 2)))
     (deposit test-ds 2 20)
-    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
-    (is (= #:account{:id 2, :name "Mr. Orange", :balance 20.0} (get-account test-ds 2)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= {:account-number 2, :name "Mr. Orange", :balance 20.0} (get-account test-ds 2)))
 ))
 
 
@@ -69,7 +69,16 @@
     (drop-tables test-ds)
     (create-tables test-ds)
     (create-account test-ds "Mr. White")
-    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
     (is (= nil (deposit test-ds 100 20))) ; account 100 doesn't exist
-    (is (= #:account{:id 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (get-account test-ds 1)))
+))
+
+
+(deftest builder-fn-test
+  (testing "modify column names with a jdbc builder-fn"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (is (= {:account-number 1, :name "Mr. White", :balance 0.0} (jdbc/execute-one! test-ds ["select * from account where account_number = ?" 1] {:builder-fn as-unqualified-kebab-maps})))
 ))

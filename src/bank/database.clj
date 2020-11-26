@@ -2,6 +2,7 @@
   (:require
     [clojure.set :refer [rename-keys, map-invert]]
     [next.jdbc :as jdbc]
+    [next.jdbc.result-set :refer [as-unqualified-kebab-maps]]
     [next.jdbc.sql :as sql]))
 
 (def default-db {:dbtype "postgresql" :host "localhost" :dbname "bank" :user "mkl" :password "w00t"})
@@ -13,10 +14,10 @@
 (defn create-tables [ds]
   (jdbc/execute-one! ds [(str
     "create table if not exists account"
-    "( id serial not null"
+    "( account_number serial not null"
     ", name text not null"
     ", balance money"
-    ", primary key (id))")]))
+    ", primary key (account_number))")]))
 
 (defn reset [ds] (do
   (drop-tables ds)
@@ -27,11 +28,11 @@
 ; this returns the complete row only for postgresql. Other databases may return
 ; only the keys. See next.jdbc.sql documentation.
 (defn create-account [ds name]
-  (sql/insert! ds :account {:name name :balance 0}))
+  (sql/insert! ds :account {:name name :balance 0} {:builder-fn as-unqualified-kebab-maps}))
 
 ; Returns nil if an account with the given id doesn't exist.
 (defn get-account [ds id]
-  (sql/get-by-id ds :account id))
+  (sql/get-by-id ds :account id "account_number" {:builder-fn as-unqualified-kebab-maps}))
 
 ; Deposits the given amount to the account and returns the updated account.
 ; Does not perform argument verification. Only pass positive amounts!
@@ -45,21 +46,5 @@
     (jdbc/execute-one! conn [(str
       "update account"
       " set balance = balance + CAST(" amount " AS money)"
-      " where id = " id)])
-    (sql/get-by-id conn :account id)))
-
-; Column names in the database and json names in requests and responses differ.
-; These functions help translating between them.
-; TODO: find a more elegant way to do this. next.jdbc has sophisticated
-; translation functions. See also https://github.com/mklinik/bank/issues/10
-(def table-name-translation
-    { :account/id :account-number
-    , :account/name :name
-    , :account/balance :balance
-    })
-
-(defn db-to-json-names [m]
-  (rename-keys m table-name-translation))
-
-(defn json-to-db-names [m]
-  (rename-keys m (map-invert table-name-translation)))
+      " where account_number = " id)])
+    (get-account conn id)))

@@ -11,6 +11,7 @@
                  [compojure "1.6.2"]
                  [seancorfield/next.jdbc "1.1.613"]
                  [org.postgresql/postgresql "42.2.18.jre7"]
+                 [camel-snake-kebab "0.4.2"]
                  [cheshire "5.10.0"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler bank.core/app}

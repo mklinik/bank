@@ -21,8 +21,7 @@
 
 (defn create-account
   ([request] (do
-    (let [new-account-raw (db/create-account db/default-ds (get-in request [:body "name"]))
-          new-account (db/db-to-json-names new-account-raw)]
+    (let [new-account (db/create-account db/default-ds (get-in request [:body "name"]))]
       (->
         (res/response (json/encode new-account))
         (res/content-type "application/json"))))))
@@ -39,11 +38,10 @@
   ([request] (do
     ; TODO: find a way to test status codes; needs some intelligent curl usage
     (if-let [params (verify-retrieve-parameters request)]
-      (if-let [got-account-raw (db/get-account db/default-ds (:id params))]
-        (let [got-account (db/db-to-json-names got-account-raw)]
-          (->
-            (res/response (json/encode got-account))
-            (res/content-type "application/json")))
+      (if-let [got-account (db/get-account db/default-ds (:id params))]
+        (->
+          (res/response (json/encode got-account))
+          (res/content-type "application/json"))
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
@@ -62,14 +60,13 @@
 (defn deposit
   ([request] (do
     (if-let [params (verify-deposit-parameters request)]
-      (if-let [got-account-raw (db/deposit
+      (if-let [got-account (db/deposit
                   db/default-ds
                   (:id params)
                   (:amount params))]
-        (let [got-account (db/db-to-json-names got-account-raw)]
           (->
             (res/response (json/encode got-account))
-            (res/content-type "application/json")))
+            (res/content-type "application/json"))
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
