@@ -135,6 +135,7 @@
         (throw (Exception. "insufficient funds on sender account")))
 
       ; with all the above checks passing, we can now safely transfer the money
+      ; These should not fail, and we can safely create audit logs
       (jdbc/execute-one! conn [(str
         "update account"
         " set balance = balance - ?::numeric::money"
@@ -143,5 +144,13 @@
         "update account"
         " set balance = balance + ?::numeric::money"
         " where account_number = ?") amount receiver-id])
+      (record-audit-log conn
+        {:account_number sender-id
+        ,:debit amount
+        ,:description (str "send to #" receiver-id)})
+      (record-audit-log conn
+        {:account_number receiver-id
+        ,:credit amount
+        ,:description (str "receive from #" sender-id)})
       (get-account conn sender-id))
     (catch Exception e nil)))

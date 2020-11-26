@@ -214,7 +214,7 @@
 )
 
 
-(deftest transfer-param-verification-test
+(deftest transfer-test
   (testing "transfer some money"
     (drop-tables test-ds)
     (create-tables test-ds)
@@ -228,4 +228,21 @@
 
     (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (get-account test-ds 1)))
     (is (= {:account-number 2, :name "Mr. Pink",  :balance  5.0} (get-account test-ds 2)))
+))
+
+
+(deftest transfer-auditlog-test
+  (testing "transfer some money and check the audit logs"
+    (reset test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (transfer test-ds 1 2 5)
+    (is (= [#:audit_log{:sequence_number 0 :account_number 1 :debit nil :credit  20 :description "deposit"}
+           ,#:audit_log{:sequence_number 1 :account_number 1 :debit   5 :credit nil :description "send to #2"}
+           ]
+           (jdbc/execute! test-ds ["select * from audit_log where account_number = 1"])))
+    (is (= [#:audit_log{:sequence_number 0 :account_number 2 :debit nil :credit   5 :description "receive from #1"}
+           ]
+           (jdbc/execute! test-ds ["select * from audit_log where account_number = 2"])))
 ))
