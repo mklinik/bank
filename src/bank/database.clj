@@ -94,4 +94,4 @@
         " set balance = balance + ?::numeric::money"
         " where account_number = ?") amount receiver-id])
       (get-account conn sender-id))
-    (catch Exception e {})))
+    (catch Exception e nil)))
