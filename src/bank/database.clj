@@ -45,6 +45,6 @@
     ; important! use conn for all executions, not ds
     (jdbc/execute-one! conn [(str
       "update account"
-      " set balance = balance + CAST(" amount " AS money)"
-      " where account_number = " id)])
+      " set balance = balance + ?::numeric::money"
+      " where account_number = ?") amount id])
     (get-account conn id)))
