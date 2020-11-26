@@ -47,9 +47,10 @@
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
-; The amount must be positive. Amount is passed in the json body.
-; Ideally we would also verify that the given account id exists, but that is
-; implicitly handelled when the deposit command returns nil as result.
+; The amount must be positive, and id must be a parsable integer. Amount is
+; passed in the json body. Ideally we would also verify that the given account
+; id exists, but that is implicitly handelled when the deposit command returns
+; nil as result.
 (defn verify-deposit-parameters [request]
   (when-let [amount (get-in request [:body "amount"])]
     (when-let [id-str (get-in request [:route-params :id])]
