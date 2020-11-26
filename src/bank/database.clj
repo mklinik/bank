@@ -62,3 +62,34 @@
       " and balance >= ?::numeric::money"
       " and ? > 0") amount id amount amount])
     (get-account conn id)))
+
+
+; Returns empty map when parameter verification fails
+; TODO: what is a consistent way of handling errors? See https://github.com/mklinik/bank/issues/8
+(defn transfer [ds sender-id receiver-id amount]
+  ; I think we need isolation level serializable in for this transaction, but I
+  ; need to contemplate more about isolation levels.
+  (try
+    (jdbc/with-transaction [conn ds {:isolation :serializable :auto-commit false}]
+      (when (< amount 0) (throw (Exception. "amount is negative")))
+      ; first check that both accounts exist, and that they are different account numbers
+      (let [result (jdbc/execute! conn [(str
+        "select account_number from account"
+        " where account_number = ?"
+        " or account_number = ?") sender-id receiver-id])]
+        (when (not= 2 (count result)) (throw (Exception. "account verification failed"))))
+
+      ; (jdbc/execute-one! conn [(str
+        ; "update account"
+        ; " set balance = balance - ?::numeric::money"
+        ; " where account_number = ?"
+        ; " and balance >= ?::numeric::money"
+        ; " and ? > 0") amount sender-id amount amount])
+      ; (jdbc/execute-one! conn [(str
+        ; "update account"
+        ; " set balance = balance + ?::numeric::money"
+        ; " where account_number = ?"
+        ; " and balance >= ?::numeric::money"
+        ; " and ? > 0") amount receiver-id amount amount])
+      (get-account conn sender-id))
+    (catch Exception e {})))

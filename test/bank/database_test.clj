@@ -136,3 +136,35 @@
     (deposit test-ds 1 20)
     (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (withdraw test-ds 1 -100)))
 ))
+
+
+(deftest transfer-param-verification-test
+  (testing "transfer money from a nonexistent account to an existing account"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (is (= {} (transfer test-ds 47 1 100))))
+  (testing "transfer money to a nonexistent account"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (is (= {} (transfer test-ds 1 47 100))))
+  (testing "transfer between nonexistent accounts"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (is (= {} (transfer test-ds 1000 47 100))))
+  (testing "transfer to self"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (is (= {} (transfer test-ds 1 1 5))))
+)
