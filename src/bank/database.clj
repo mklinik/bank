@@ -23,7 +23,6 @@
   (drop-tables ds)
   (create-tables ds)))
 
-; TODO: take care of sql injection: how?
 ; Create an account with the given name. Returns the created row as map. Note:
 ; this returns the complete row only for postgresql. Other databases may return
 ; only the keys. See next.jdbc.sql documentation.
