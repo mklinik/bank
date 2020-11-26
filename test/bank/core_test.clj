@@ -19,8 +19,8 @@
       (finally
         (.stop server)))))
 
-; restart the server for each test
-(use-fixtures :each with-ring)
+; start server once for all tests
+(use-fixtures :once with-ring)
 
 ; Performs a POST request with the given input map as json body, and returns the
 ; result json as decoded map
