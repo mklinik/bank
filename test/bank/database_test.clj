@@ -167,4 +167,28 @@
     (create-account test-ds "Mr. Pink")
     (deposit test-ds 1 20)
     (is (= {} (transfer test-ds 1 1 5))))
+  (testing "insufficient funds on sender account"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (is (= {} (transfer test-ds 1 2 5000))))
 )
+
+
+(deftest transfer-param-verification-test
+  (testing "transfer some money"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (get-account test-ds 1)))
+    (is (= {:account-number 2, :name "Mr. Pink",  :balance  0.0} (get-account test-ds 2)))
+
+    (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (transfer test-ds 1 2 5)))
+
+    (is (= {:account-number 1, :name "Mr. White", :balance 15.0} (get-account test-ds 1)))
+    (is (= {:account-number 2, :name "Mr. Pink",  :balance  5.0} (get-account test-ds 2)))
+))

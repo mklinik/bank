@@ -77,19 +77,21 @@
         "select account_number from account"
         " where account_number = ?"
         " or account_number = ?") sender-id receiver-id])]
-        (when (not= 2 (count result)) (throw (Exception. "account verification failed"))))
+        (when
+          (not= 2 (count result))
+          (throw (Exception. "account verification failed"))))
+      (when
+        (< (:balance (get-account conn sender-id)) amount)
+        (throw (Exception. "insufficient funds on sender account")))
 
-      ; (jdbc/execute-one! conn [(str
-        ; "update account"
-        ; " set balance = balance - ?::numeric::money"
-        ; " where account_number = ?"
-        ; " and balance >= ?::numeric::money"
-        ; " and ? > 0") amount sender-id amount amount])
-      ; (jdbc/execute-one! conn [(str
-        ; "update account"
-        ; " set balance = balance + ?::numeric::money"
-        ; " where account_number = ?"
-        ; " and balance >= ?::numeric::money"
-        ; " and ? > 0") amount receiver-id amount amount])
+      ; with all the above checks passing, we can now safely transfer the money
+      (jdbc/execute-one! conn [(str
+        "update account"
+        " set balance = balance - ?::numeric::money"
+        " where account_number = ?") amount sender-id])
+      (jdbc/execute-one! conn [(str
+        "update account"
+        " set balance = balance + ?::numeric::money"
+        " where account_number = ?") amount receiver-id])
       (get-account conn sender-id))
     (catch Exception e {})))
