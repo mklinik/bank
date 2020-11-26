@@ -12,7 +12,7 @@
   (do
     (jdbc/execute-one! ds ["drop table if exists account"])
     (jdbc/execute-one! ds ["drop table if exists audit_log"])
-    (jdbc/execute-one! ds ["drop table if exists next_sequence_number"])))
+    (jdbc/execute-one! ds ["drop table if exists next_sequence"])))
 
 (defn create-tables [ds]
   (do
@@ -24,7 +24,7 @@
       ", primary key (account_number))")])
     (jdbc/execute-one! ds [(str
       "create table if not exists audit_log"
-      "( sequence_number integer not null"
+      "( sequence integer not null"
       ", account_number integer not null"
       ", debit integer default null"
       ", credit integer default null"
@@ -34,9 +34,9 @@
     ; We could store it in account directly. This has advantages and
     ; disadvantages. For now, let's make a separate table.
     (jdbc/execute-one! ds [(str
-     "create table if not exists next_sequence_number"
+     "create table if not exists next_sequence"
      "( account_number integer not null"
-     ", next_sequence_number integer not null"
+     ", next_sequence integer not null"
      ")")])
 ))
 
@@ -55,24 +55,32 @@
 ; database operations. No other operation should come between! This also means
 ; that all transactions should be serializable.
 (defn record-audit-log [conn audit-record]
-  (let [next-sequence-number (:next_sequence_number/next_sequence_number
+  (let [next-sequence (:next_sequence/next_sequence
     (jdbc/execute-one! conn [(str
-    "update next_sequence_number"
-    " set next_sequence_number = next_sequence_number + 1"
+    "update next_sequence"
+    " set next_sequence = next_sequence + 1"
     " where account_number = ?"
-    " returning next_sequence_number") (:account_number audit-record)]))]
-    (sql/insert! conn :audit_log (assoc audit-record :sequence_number (- next-sequence-number 1))))
+    " returning next_sequence") (:account_number audit-record)]))]
+    (sql/insert! conn :audit_log (assoc audit-record :sequence (- next-sequence 1))))
 )
+
+
+(defn get-audit-log [ds id]
+  (jdbc/execute! ds [(str
+    "select sequence, debit, credit, description"
+    " from audit_log where account_number = ?"
+    " order by sequence desc") id]
+    {:builder-fn as-unqualified-kebab-maps}))
 
 ; Create an account with the given name. Returns the created row as map. Note:
 ; this returns the complete row only for postgresql. Other databases may return
 ; only the keys. See next.jdbc.sql documentation. See also the RETURNING clause.
 (defn create-account [ds name]
   ; we need :isolation :serializable because there should not come any
-  ; transaction between account creation and next_sequence_number creation
+  ; transaction between account creation and next_sequence creation
   (jdbc/with-transaction [conn ds {:isolation :serializable}]
     (let [result (sql/insert! conn :account {:name name :balance 0} {:builder-fn as-unqualified-kebab-maps})]
-        (sql/insert! conn :next_sequence_number {:account_number (:account-number result) :next_sequence_number 0})
+        (sql/insert! conn :next_sequence {:account_number (:account-number result) :next_sequence 0})
         result)))
 
 ; Returns nil if an account with the given id doesn't exist.

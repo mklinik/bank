@@ -15,7 +15,7 @@
     (create-tables test-ds)
     (is (= [] (jdbc/execute! test-ds ["select * from account"])))
     (is (= [] (jdbc/execute! test-ds ["select * from audit_log"])))
-    (is (= [] (jdbc/execute! test-ds ["select * from next_sequence_number"])))))
+    (is (= [] (jdbc/execute! test-ds ["select * from next_sequence"])))))
 
 (deftest db-create-account-test
   (testing "create an account and see if it's there"
@@ -23,8 +23,8 @@
     (create-account test-ds "Mr. White")
     (is (= [{:account-number 1, :name "Mr. White", :balance 0.0}]
            (jdbc/execute! test-ds ["select * from account"] {:builder-fn as-unqualified-kebab-maps})))
-    (is (= [#:next_sequence_number{:account_number 1, :next_sequence_number 0}]
-           (jdbc/execute! test-ds ["select * from next_sequence_number"]))))
+    (is (= [#:next_sequence{:account_number 1, :next_sequence 0}]
+           (jdbc/execute! test-ds ["select * from next_sequence"]))))
 
   (testing "create two accounts and see if they are there"
     (reset test-ds)
@@ -34,9 +34,9 @@
             {:account-number 2, :name "Mr. Orange", :balance 0.0}
            ]
            (jdbc/execute! test-ds ["select * from account"] {:builder-fn as-unqualified-kebab-maps})))
-    (is (= [#:next_sequence_number{:account_number 1, :next_sequence_number 0}
-            #:next_sequence_number{:account_number 2, :next_sequence_number 0}]
-           (jdbc/execute! test-ds ["select * from next_sequence_number"]))))
+    (is (= [#:next_sequence{:account_number 1, :next_sequence 0}
+            #:next_sequence{:account_number 2, :next_sequence 0}]
+           (jdbc/execute! test-ds ["select * from next_sequence"]))))
 )
 
 
@@ -69,7 +69,7 @@
     (create-account test-ds "Mr. White")
     (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (deposit test-ds 1 20)))
     (is (= [#:audit_log
-            {:sequence_number 0
+            {:sequence 0
              :account_number 1
              :debit nil
              :credit 20
@@ -137,8 +137,8 @@
     (create-account test-ds "Mr. White")
     (deposit test-ds 1 20)
     (withdraw test-ds 1 5)
-    (is (= [#:audit_log{:sequence_number 0 :account_number 1 :debit nil :credit  20 :description "deposit"}
-           ,#:audit_log{:sequence_number 1 :account_number 1 :debit   5 :credit nil :description "withdraw"}
+    (is (= [#:audit_log{:sequence 0 :account_number 1 :debit nil :credit  20 :description "deposit"}
+           ,#:audit_log{:sequence 1 :account_number 1 :debit   5 :credit nil :description "withdraw"}
            ]
            (jdbc/execute! test-ds ["select * from audit_log"]))))
 )
@@ -238,11 +238,28 @@
     (create-account test-ds "Mr. Pink")
     (deposit test-ds 1 20)
     (transfer test-ds 1 2 5)
-    (is (= [#:audit_log{:sequence_number 0 :account_number 1 :debit nil :credit  20 :description "deposit"}
-           ,#:audit_log{:sequence_number 1 :account_number 1 :debit   5 :credit nil :description "send to #2"}
+    (is (= [#:audit_log{:sequence 0 :account_number 1 :debit nil :credit  20 :description "deposit"}
+           ,#:audit_log{:sequence 1 :account_number 1 :debit   5 :credit nil :description "send to #2"}
            ]
            (jdbc/execute! test-ds ["select * from audit_log where account_number = 1"])))
-    (is (= [#:audit_log{:sequence_number 0 :account_number 2 :debit nil :credit   5 :description "receive from #1"}
+    (is (= [#:audit_log{:sequence 0 :account_number 2 :debit nil :credit   5 :description "receive from #1"}
            ]
            (jdbc/execute! test-ds ["select * from audit_log where account_number = 2"])))
+))
+
+
+(deftest get-audit-log-test
+  (testing "transfer some money and check the audit logs obtained from get-audit-log"
+    (reset test-ds)
+    (create-account test-ds "Mr. White")
+    (create-account test-ds "Mr. Pink")
+    (deposit test-ds 1 20)
+    (transfer test-ds 1 2 5)
+    (withdraw test-ds 2 5)
+    (is (= [{:sequence 1, :debit   5, :credit nil, :description "send to #2"}
+            {:sequence 0, :debit nil, :credit  20, :description "deposit"}]
+           (get-audit-log test-ds 1)))
+    (is (= [{:sequence 1, :debit   5, :credit nil, :description "withdraw"}
+            {:sequence 0, :debit nil, :credit   5, :description "receive from #1"}]
+           (get-audit-log test-ds 2)))
 ))
