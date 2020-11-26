@@ -50,12 +50,14 @@
     (get-account conn id)))
 
 
-; The caller has to make sure that amount is positive.
-; The where statement assures that balance can't fall below zero.
+; The where statement assures that balance can't fall below zero, and that the
+; amount is positive.
 (defn withdraw [ds id amount]
   (jdbc/with-transaction [conn ds]
     (jdbc/execute-one! conn [(str
       "update account"
       " set balance = balance - ?::numeric::money"
-      " where account_number = ? and balance >= ?::numeric::money") amount id amount])
+      " where account_number = ?"
+      " and balance >= ?::numeric::money"
+      " and ? > 0") amount id amount amount])
     (get-account conn id)))

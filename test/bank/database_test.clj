@@ -115,3 +115,13 @@
     (is (= nil (withdraw test-ds 47 100)))
     (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (withdraw test-ds 1 100)))
 ))
+
+
+(deftest withdraw-negative-amount-test
+  (testing "withdrawing a negative amount account should be a noop"
+    (drop-tables test-ds)
+    (create-tables test-ds)
+    (create-account test-ds "Mr. White")
+    (deposit test-ds 1 20)
+    (is (= {:account-number 1, :name "Mr. White", :balance 20.0} (withdraw test-ds 1 -100)))
+))
