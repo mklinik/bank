@@ -5,6 +5,11 @@ request-retrieve-account() {
   echo ""
 }
 
+request-audit-log() {
+  curl -v "http://localhost:3000/account/$1/audit"
+  echo ""
+}
+
 request-create-account() {
   curl -v 'http://localhost:3000/account' \
     -d '{ "name": "Mr. Black" }' \
