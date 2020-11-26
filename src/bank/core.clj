@@ -95,6 +95,38 @@
         (res/not-found (json/encode {})))
       (res/bad-request (json/encode {}))))))
 
+
+(defn verify-transfer-parameters [request]
+  (when-let [amount (get-in request [:body "amount"])]
+  (when-let [id-str (get-in request [:route-params :id])]
+  (when-let [receiver-id (get-in request [:body "account-number"])]
+    (try
+      (when
+        (> amount 0)
+        {:amount amount
+         :sender-id (Integer/parseInt id-str)
+         :receiver-id receiver-id
+         })
+      (catch Exception e nil))))
+))
+
+(defn transfer
+  ([request] (do
+    (if-let [params (verify-transfer-parameters request)]
+      (if-let [got-account (db/transfer
+                  db/default-ds
+                  (:sender-id params)
+                  (:receiver-id params)
+                  (:amount params))]
+        (->
+          (res/response (json/encode got-account))
+          (res/content-type "application/json"))
+        ; TODO: proper error response. db/transfer can fail for other reasons
+        ; than not found. Maybe encode reason in the return value of
+        ; db/transfer?
+        (res/not-found (json/encode {})))
+      (res/bad-request (json/encode {}))))))
+
 ; wrap-json-body must be on the innermost level, because it consumes the :body
 ; input stream. defroutes tries routes until the first one matches. If multiple
 ; rules use wrap-json-body on the outside, only the first one gets an actual
@@ -104,6 +136,7 @@
   (POST "/account" [] (wrap-json-body create-account))
   (POST "/account/:id/deposit" [] (wrap-json-body deposit))
   (POST "/account/:id/withdraw" [] (wrap-json-body withdraw))
+  (POST "/account/:id/send" [] (wrap-json-body transfer))
   (GET "/account/:id" [] retrieve-account)
   (route/not-found "Page not found"))
 

@@ -211,3 +211,100 @@
             "balance" 100.0}
            (curl-get  "http://localhost:3000/account/1")))
 ))
+
+
+(deftest transfer-test
+  (testing "just transfer some money"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Black"})
+    (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1")))
+
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 80.0}
+           (curl-post "http://localhost:3000/account/1/send" {"amount" 20, "account-number" 2})))
+
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 80.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {"account-number" 2
+            "name" "Mr. Black"
+            "balance" 20.0}
+           (curl-get  "http://localhost:3000/account/2")))
+))
+
+
+(deftest transfer-invalid-parameters-test
+  (testing "transfer negative amount"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Black"})
+    (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})
+
+    (is (= {}
+           (curl-post "http://localhost:3000/account/1/send" {"amount" -20, "account-number" 2})))
+
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {"account-number" 2
+            "name" "Mr. Black"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/2"))))
+
+  (testing "transfer from nonexistent account"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Black"})
+    (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})
+
+    (is (= {}
+           (curl-post "http://localhost:3000/account/101/send" {"amount" 20, "account-number" 2})))
+
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {"account-number" 2
+            "name" "Mr. Black"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/2"))))
+
+  (testing "transfer to nonexistent account"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Black"})
+    (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})
+
+    (is (= {}
+           (curl-post "http://localhost:3000/account/1/send" {"amount" 20, "account-number" 13})))
+
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1")))
+    (is (= {"account-number" 2
+            "name" "Mr. Black"
+            "balance" 0.0}
+           (curl-get  "http://localhost:3000/account/2"))))
+
+  (testing "transfer to self"
+    (db/reset db/default-ds)
+    (curl-post "http://localhost:3000/account" {"name" "Mr. Orange"})
+    (curl-post "http://localhost:3000/account/1/deposit" {"amount" 100})
+
+    (is (= {}
+           (curl-post "http://localhost:3000/account/1/send" {"amount" 20, "account-number" 1})))
+
+    (is (= {"account-number" 1
+            "name" "Mr. Orange"
+            "balance" 100.0}
+           (curl-get  "http://localhost:3000/account/1"))))
+)
