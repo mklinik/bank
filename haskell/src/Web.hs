@@ -10,6 +10,6 @@ bank :: ScottyM ()
 bank = do
   get "/account/:id" $ do
     json $ AccountInfo 1 "Mr. Orange" 500
-  get "/s/:word" $ do
+  get "/echo/:word" $ do
     beam <- param "word"
-    html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
+    text beam
