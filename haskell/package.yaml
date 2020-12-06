@@ -1,6 +1,6 @@
-name:                haskell
+name:                bank
 version:             0.1.0.0
-github:              "githubuser/haskell"
+github:              "githubuser/bank"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
@@ -17,16 +17,20 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/haskell#readme>
+description:         Please see the README on GitHub at <https://github.com/githubuser/bank#readme>
 
 dependencies:
 - base >= 4.7 && < 5
+- scotty
+- aeson
+- casing
+- hspec
 
 library:
   source-dirs: src
 
 executables:
-  haskell-exe:
+  bank-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -34,10 +38,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - haskell
+    - bank
 
 tests:
-  haskell-test:
+  spec:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -45,4 +49,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - haskell
+    - bank
