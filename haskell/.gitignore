@@ -3,3 +3,4 @@
 .ghcid
 stack.yaml.lock
 tags
+bank.cabal
