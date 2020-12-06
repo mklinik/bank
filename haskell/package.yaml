@@ -21,10 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- scotty
-- aeson
-- casing
-- hspec
+- scotty >= 0.11.6
+- aeson >= 1.4.7.1
+- casing >= 0.1.4.1
+- hspec >= 2.7.4
+- wai-extra >= 3.0.32
 
 library:
   source-dirs: src
