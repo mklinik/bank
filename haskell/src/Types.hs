@@ -11,7 +11,10 @@ data AccountInfo = AccountInfo
   , balance :: Int
   } deriving (Generic, Show, Eq)
 
-instance ToJSON AccountInfo where
-  toEncoding = genericToEncoding (defaultOptions {fieldLabelModifier = kebab})
+withKebabLabels = defaultOptions {fieldLabelModifier = kebab}
 
-instance FromJSON AccountInfo
+instance ToJSON AccountInfo where
+  toEncoding = genericToEncoding withKebabLabels
+
+instance FromJSON AccountInfo where
+  parseJSON = genericParseJSON withKebabLabels
