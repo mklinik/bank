@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-
 module WebSpec where
 
 import Test.Hspec
@@ -21,4 +20,4 @@ spec = do
     it "creates an account" $ do
       bankApp <- scottyApp bank
       resp <- runSession (request $ setPath defaultRequest "/account/500") bankApp
-      simpleBody resp `shouldBe` encode (AccountInfo 1 "Mr. Orange" 500)
+      decode (simpleBody resp) `shouldBe` Just (AccountInfo 1 "Mr. Orange" 500)

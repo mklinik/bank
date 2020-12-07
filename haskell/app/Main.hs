@@ -1,8 +1,6 @@
 module Main where
 
-import Web.Scotty
-
-import Web
+import Run (run)
 
 main :: IO ()
-main = scotty 3000 bank
+main = run

@@ -1,1 +1,1 @@
---command="stack ghci --test --main-is bank:spec" --outputfile=errors.err --lint=make-tags-haskell.sh --test=main
+--command="stack ghci bank:lib bank:spec bank:bank --main-is bank:bank" --outputfile=errors.err --lint=make-tags-haskell.sh --test=main

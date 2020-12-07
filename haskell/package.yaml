@@ -27,12 +27,13 @@ dependencies:
 - hspec >= 2.7.4
 - wai-extra >= 3.0.32
 - bytestring >= 0.10.10.1
+- postgresql-simple >= 0.6.3
 
 library:
   source-dirs: src
 
 executables:
-  bank-exe:
+  bank:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
