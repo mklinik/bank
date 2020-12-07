@@ -24,7 +24,6 @@ spec = do
       withConnection myConnectInfo reset
       withConnection myConnectInfo (createAccount "Mr. Pink")
         `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-
     it "cretes multiple accounts with ascending account number" $ do
       withConnection myConnectInfo reset
       withConnection myConnectInfo (createAccount "Mr. Pink")
