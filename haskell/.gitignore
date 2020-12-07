@@ -1,6 +1,5 @@
 .stack-work/
 *~
-.ghcid
 stack.yaml.lock
 tags
 bank.cabal
