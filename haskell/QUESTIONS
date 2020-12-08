@@ -6,3 +6,4 @@
 - [ ] How to do exception handling in Database, the SQL functions can throw exceptions
   - tryAny in the handler? in the database function?
   - Scotty.liftAndCatchIO?
+- [ ] How to handle the error that withdraw tries to get more than available?

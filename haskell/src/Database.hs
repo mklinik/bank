@@ -74,3 +74,16 @@ depositMoney accountNumber amount conn =
     else SQL.query conn
       "update account set balance = balance + ? where account_number = ? returning *"
       (amount, accountNumber)
+
+withdrawMoney :: Int -> Int -> Connection -> IO [AccountInfo]
+withdrawMoney accountNumber amount conn =
+  if (amount < 0)
+    then pure []
+    else SQL.query conn
+      (mconcat
+        [ "update account set balance = balance - ?"
+        , " where account_number = ?"
+        , " and balance >= ?"
+        , " returning *"
+        ])
+      (amount, accountNumber, amount)

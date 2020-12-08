@@ -80,3 +80,48 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
         withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
         withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+
+
+  describe "withdrawMoney" $ do
+    it "withdraws money in the happy case" $ do
+      withTestDB (createAccount "Mr. Pink")
+      withTestDB (depositMoney 1 50)
+      withTestDB (withdrawMoney 1 20) `shouldReturn` [AccountInfo 1 "Mr. Pink" 30]
+
+    context "when there are multiple accounts" $ do
+      it "withdraws only from the given account" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (createAccount "Mr. Orange")
+        withTestDB (depositMoney 2 50)
+        withTestDB (withdrawMoney 2 11) `shouldReturn` [AccountInfo 2 "Mr. White" 39]
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 39]
+        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+
+    context "when a negative amount is given" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (createAccount "Mr. Orange")
+        withTestDB (depositMoney 2 50)
+        withTestDB (withdrawMoney 2 (-11)) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
+        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+
+    context "when a non-existing account number is given" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (createAccount "Mr. Orange")
+        withTestDB (withdrawMoney (-50) 11) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+
+    context "when trying to withdraw more than available" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (depositMoney 1 50)
+        withTestDB (withdrawMoney 1 1000) `shouldReturn` []
