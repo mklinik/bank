@@ -10,7 +10,9 @@ import Database
 run :: IO ()
 run = myWebApp productionDB
 
-myWebApp db = scotty 3000 (bank db)
+myWebApp db = do
+  withConnection db createTables
+  scotty 3000 (bank db)
 
 hello :: IO ()
 hello = do

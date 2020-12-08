@@ -14,7 +14,7 @@ createAccountHandler db = do
   result <- liftIO $ withConnection db (createAccount "Test Name")
   case result of
     [newAccount] -> json newAccount
-    _ -> error "what to do?"
+    _ -> error "TODO: generate error response"
 
 bank :: ConnectInfo -> ScottyM ()
 bank db = do
