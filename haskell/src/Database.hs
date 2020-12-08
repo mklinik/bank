@@ -65,3 +65,12 @@ createAccount name conn =
 getAccount :: Int -> Connection -> IO [AccountInfo]
 getAccount accountNumber conn =
   SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
+
+
+depositMoney :: Int -> Int -> Connection -> IO [AccountInfo]
+depositMoney accountNumber amount conn =
+  if (amount < 0)
+    then pure []
+    else SQL.query conn
+      "update account set balance = balance + ? where account_number = ? returning *"
+      (amount, accountNumber)

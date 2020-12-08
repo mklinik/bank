@@ -45,3 +45,38 @@ spec = before_ (withTestDB resetDatabase) $ do
       it "returns the empty list" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (getAccount 42) `shouldReturn` []
+
+  describe "depositMoney" $ do
+    it "deposits money in the happy case" $ do
+      withTestDB (createAccount "Mr. Pink")
+      withTestDB (depositMoney 1 50) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
+
+    context "when there are multiple accounts" $ do
+      it "deposits money into the requested account" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (createAccount "Mr. Orange")
+        withTestDB (depositMoney 2 50) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
+        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+
+    context "when a non-existing account number is given" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (createAccount "Mr. Orange")
+        withTestDB (depositMoney 400 50) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+
+    context "when a negative amount is given" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (createAccount "Mr. Orange")
+        withTestDB (depositMoney 2 (-50)) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
