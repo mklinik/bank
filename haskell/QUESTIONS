@@ -1,4 +1,5 @@
 - [ ] How to write integration tests?
+  - for example to test malformed json body
 - [ ] Do we need a new data type for every json request / response body? What is the preferred way for ad-hoc json?
 - [ ] What is the best way to specify package versions in package.yaml?
 - [ ] Any thoughts on RIO?
