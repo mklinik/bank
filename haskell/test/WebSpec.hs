@@ -85,3 +85,27 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
     context "when trying to retreive a non-existing account" $ do
       it "returns a 404 error message" $ do
         get "/account/200" `shouldRespondWith` 404
+
+
+  describe "/account/:id/deposit" $ do
+    it "deposits money in the happy case" $ do
+      post "/account" (encode [yamlQQ| name: Mr. Orange |])
+      post "/account/1/deposit" (encode [yamlQQ| amount: 202 |])
+        `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. Orange
+            account-number: 1
+            balance: 202
+          |]
+
+    context "when given an invalid account number" $ do
+      it "returns an error status code" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account/blah/deposit" (encode [yamlQQ| amount: 202 |])
+          `shouldRespondWith` 404
+
+    context "when given a non-existing account number" $ do
+      it "returns an error status code" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account/200/deposit" (encode [yamlQQ| amount: 202 |])
+          `shouldRespondWith` 500
