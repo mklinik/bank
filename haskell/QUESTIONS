@@ -1,2 +1,7 @@
-- [ ] how to write integration tests?
-- [ ] do we need a new data type for every json request / response body? What is the preferred way for ad-hoc json?
+- [ ] How to write integration tests?
+- [ ] Do we need a new data type for every json request / response body? What is the preferred way for ad-hoc json?
+- [ ] What is the best way to specify package versions in package.yaml?
+- [ ] Any thoughts on RIO?
+- [ ] How to do exception handling in Database, the SQL functions can throw exceptions
+  - tryAny in the handler? in the database function?
+  - Scotty.liftAndCatchIO?
