@@ -14,7 +14,7 @@ import Database
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
   accountParams <- jsonData
-  result <- liftIO $ withConnection db (createAccount (AP.name accountParams))
+  result <- liftAndCatchIO $ withConnection db (createAccount (AP.name accountParams))
   case result of
     [newAccount] -> json newAccount
     _ -> raise "could not create new account"

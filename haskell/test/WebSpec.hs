@@ -43,6 +43,11 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
             account-number: 3
             balance: 0 |]
 
+    context "when there are no tables" $ do
+      it "responds with a 500 status code" $ do
+        liftIO $ withTestDB dropTables
+        post "/account" (encode [yamlQQ| name: Mr. Black |]) `shouldRespondWith` 500
+
   describe "/account/:id" $ do
     it "retrieves an account" $ do
       post "/account" (encode [yamlQQ| name: Mr. Orange |])
