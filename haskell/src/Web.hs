@@ -12,8 +12,8 @@ import Database
 
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
-  jsonBody <- jsonData
-  result <- liftIO $ withConnection db (createAccount (AP.name jsonBody))
+  accountParams <- jsonData
+  result <- liftIO $ withConnection db (createAccount (AP.name accountParams))
   case result of
     [newAccount] -> json newAccount
     _ -> error "TODO: generate error response"
