@@ -5,11 +5,12 @@ import Web.Scotty
 import Database.PostgreSQL.Simple
 
 import Web
+import Database
 
 run :: IO ()
-run = hello
+run = myWebApp productionDB
 
-myWebApp = scotty 3000 bank
+myWebApp db = scotty 3000 (bank db)
 
 hello :: IO ()
 hello = do

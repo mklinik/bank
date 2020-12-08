@@ -16,9 +16,16 @@ import Data.Functor
 import Data.ByteString (ByteString)
 import Control.Exception (bracket)
 
-myConnectInfo = SQL.defaultConnectInfo
+productionDB = SQL.defaultConnectInfo
   { connectHost = "localhost"
   , connectDatabase = "bank-hs"
+  , connectUser = "mkl"
+  , connectPassword = "w00t"
+  }
+
+testDB = SQL.defaultConnectInfo
+  { connectHost = "localhost"
+  , connectDatabase = "bank-hs-test"
   , connectUser = "mkl"
   , connectPassword = "w00t"
   }
@@ -27,9 +34,6 @@ myConnectInfo = SQL.defaultConnectInfo
 withConnection :: ConnectInfo -> (Connection -> IO a) -> IO a
 withConnection connInfo f = do
   bracket (SQL.connect connInfo) SQL.close f
-
-withDefaultConnection :: (Connection -> IO a) -> IO a
-withDefaultConnection = withConnection myConnectInfo
 
 
 createTables :: Connection -> IO ()
