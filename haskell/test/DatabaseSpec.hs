@@ -50,3 +50,9 @@ spec = do
         `shouldReturn` [AccountInfo 2 "Mr. Pink" 0]
       withConnection myConnectInfo (getAccount 1)
         `shouldReturn` [AccountInfo 1 "Mr. Orange" 0]
+
+    it "retrieves a non-existing account" $ do
+      withConnection myConnectInfo reset
+      withConnection myConnectInfo (createAccount "Mr. Pink")
+      withConnection myConnectInfo (getAccount 42)
+        `shouldReturn` []
