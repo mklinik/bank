@@ -32,6 +32,3 @@ bank :: ConnectInfo -> ScottyM ()
 bank db = do
   get "/account/:id" (getAccountHandler db)
   post "/account" (createAccountHandler db)
-  get "/echo/:word" $ do
-    beam <- param "word"
-    text beam
