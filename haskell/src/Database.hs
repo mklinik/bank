@@ -14,7 +14,7 @@ import Database.PostgreSQL.Simple
 import qualified Database.PostgreSQL.Simple as SQL
 import Data.Functor
 import Data.ByteString (ByteString)
-import Control.Exception (bracket)
+import Control.Exception.Safe
 
 productionDB = SQL.defaultConnectInfo
   { connectHost = "localhost"
