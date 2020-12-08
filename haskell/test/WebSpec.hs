@@ -7,7 +7,7 @@ import qualified Web.Scotty as S
 import Data.Aeson
 import Data.Yaml.TH
 
-import WaiUtil
+import TestUtil
 import Types
 import Web
 import Database
@@ -15,7 +15,7 @@ import Database
 app = S.scottyApp (bank testDB)
 
 spec :: Spec
-spec = with app $ do
+spec = with app $ before_ (withTestDB resetDatabase) $ do
   describe "/account" $ do
     it "creates an account" $ do
       post "/account" (encode [yamlQQ| name: Mr. Orange |]) `shouldRespondWith` jsonBody

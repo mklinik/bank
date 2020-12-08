@@ -4,10 +4,9 @@ module DatabaseSpec where
 import Test.Hspec
 import Database.PostgreSQL.Simple
 
+import TestUtil
 import Database
 import Types
-
-withTestDB = withConnection testDB
 
 spec :: Spec
 spec = before_ (withTestDB resetDatabase) $ do

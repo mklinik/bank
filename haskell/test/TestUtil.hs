@@ -1,8 +1,12 @@
-module WaiUtil where
+module TestUtil where
 
 import Data.Aeson.Types (Pair)
 import Test.Hspec.Wai
 import Data.Aeson
+
+import Database
+
+withTestDB = withConnection testDB
 
 jsonBody :: Value -> ResponseMatcher
 jsonBody expected = ResponseMatcher 200 [] (MatchBody (\_ b -> result b))

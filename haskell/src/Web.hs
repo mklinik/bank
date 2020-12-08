@@ -7,11 +7,13 @@ import Control.Monad.IO.Class
 import Database.PostgreSQL.Simple (ConnectInfo)
 
 import Types
+import qualified Types.AccountParams as AP
 import Database
 
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
-  result <- liftIO $ withConnection db (createAccount "Test Name")
+  jsonBody <- jsonData
+  result <- liftIO $ withConnection db (createAccount (AP.name jsonBody))
   case result of
     [newAccount] -> json newAccount
     _ -> error "TODO: generate error response"
