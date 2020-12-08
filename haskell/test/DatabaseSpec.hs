@@ -125,3 +125,49 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (depositMoney 1 50)
         withTestDB (withdrawMoney 1 1000) `shouldReturn` []
+
+
+  describe "transferMoney" $ do
+    it "transfers money from one account to another in the happy case" $ do
+      withTestDB (createAccount "Mr. Pink")
+      withTestDB (createAccount "Mr. White")
+      withTestDB (depositMoney 1 50)
+      withTestDB (transferMoney 1 2 49) `shouldReturn` [AccountInfo 1 "Mr. Pink" 1]
+      withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 1]
+      withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 49]
+
+    context "when sender is equal to receiver" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (depositMoney 1 50)
+        withTestDB (transferMoney 1 1 49) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+
+    context "when amount is negative" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (depositMoney 1 50)
+        withTestDB (transferMoney 1 2 (-5)) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+
+    context "when sender has insufficient funds" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (depositMoney 1 50)
+        withTestDB (transferMoney 1 2 5000) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+
+    context "when sender does not exist" $ do
+      it "does nothing" $ do
+        withTestDB (createAccount "Mr. Pink")
+        withTestDB (createAccount "Mr. White")
+        withTestDB (depositMoney 1 50)
+        withTestDB (transferMoney 42 2 25) `shouldReturn` []
+        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
+        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]

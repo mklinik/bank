@@ -12,9 +12,11 @@ import Database.PostgreSQL.Simple
   , connectPassword
   )
 import qualified Database.PostgreSQL.Simple as SQL
+import qualified Database.PostgreSQL.Simple.Transaction as SQL
 import Data.Functor
 import Data.ByteString (ByteString)
 import Control.Exception.Safe
+import Control.Monad
 
 productionDB = SQL.defaultConnectInfo
   { connectHost = "localhost"
@@ -75,6 +77,7 @@ depositMoney accountNumber amount conn =
       "update account set balance = balance + ? where account_number = ? returning *"
       (amount, accountNumber)
 
+
 withdrawMoney :: Int -> Int -> Connection -> IO [AccountInfo]
 withdrawMoney accountNumber amount conn =
   if (amount < 0)
@@ -87,3 +90,25 @@ withdrawMoney accountNumber amount conn =
         , " returning *"
         ])
       (amount, accountNumber, amount)
+
+
+transferMoney :: Int -> Int -> Int -> Connection -> IO [AccountInfo]
+transferMoney senderNumber receiverNumber amount conn =
+  handleAny (const $ pure []) $ do
+    SQL.withTransactionSerializable conn $ do
+      when (amount < 0) (throwString "amount is negative")
+      [Only numAccounts] <- SQL.query conn (mconcat
+        [ "select count(account_number) from account"
+        , " where account_number = ?"
+        , " or account_number = ?"
+        ])
+        (senderNumber, receiverNumber)
+      when ((numAccounts :: Int) /= 2) (throwString "account verification failed")
+      -- we know this will succeed
+      [senderAccount] <- getAccount senderNumber conn
+      when (balance senderAccount < amount) (throwString "insufficint funds on sender account")
+
+      SQL.execute conn "update account set balance = balance + ? where account_number = ?"
+        (amount, receiverNumber)
+      SQL.query conn "update account set balance = balance - ? where account_number = ? returning *"
+        (amount, senderNumber)
