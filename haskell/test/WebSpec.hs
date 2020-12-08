@@ -24,3 +24,21 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
           account-number: 1
           balance: 0
         |]
+
+    context "when called repeatedly" $ do
+      it "creates multiple accounts" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |]) `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. Orange
+            account-number: 1
+            balance: 0 |]
+        post "/account" (encode [yamlQQ| name: Mr. White |]) `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. White
+            account-number: 2
+            balance: 0 |]
+        post "/account" (encode [yamlQQ| name: Mr. Black |]) `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. Black
+            account-number: 3
+            balance: 0 |]
