@@ -42,6 +42,12 @@ reset conn = do
   dropTables conn
   createTables conn
 
+
 createAccount :: String -> Connection -> IO [AccountInfo]
 createAccount name conn =
   query conn "insert into account (name,balance) values (?, 0) returning *" (Only name)
+
+
+getAccount :: Int -> Connection -> IO [AccountInfo]
+getAccount accountNumber conn =
+  query conn "select * from account where account_number = ?" (Only accountNumber)

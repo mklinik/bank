@@ -30,3 +30,23 @@ spec = do
         `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
       withConnection myConnectInfo (createAccount "Mr. Orange")
         `shouldReturn` [AccountInfo 2 "Mr. Orange" 0]
+
+  describe "getAccount" $ do
+    it "retrieves an account" $ do
+      withConnection myConnectInfo reset
+      withConnection myConnectInfo (createAccount "Mr. Pink")
+      withConnection myConnectInfo (getAccount 1)
+        `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+
+    it "retrieves multiple accounts" $ do
+      withConnection myConnectInfo reset
+      sequence_ [withConnection myConnectInfo (createAccount name)
+        | name <- ["Mr. Orange", "Mr. Pink", "Mr. Black", "Mr. White"]]
+      withConnection myConnectInfo (getAccount 4)
+        `shouldReturn` [AccountInfo 4 "Mr. White" 0]
+      withConnection myConnectInfo (getAccount 3)
+        `shouldReturn` [AccountInfo 3 "Mr. Black" 0]
+      withConnection myConnectInfo (getAccount 2)
+        `shouldReturn` [AccountInfo 2 "Mr. Pink" 0]
+      withConnection myConnectInfo (getAccount 1)
+        `shouldReturn` [AccountInfo 1 "Mr. Orange" 0]
