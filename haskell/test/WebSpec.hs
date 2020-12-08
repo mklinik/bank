@@ -76,3 +76,7 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
             account-number: 3
             balance: 0
           |]
+
+    context "when trying to retreive a non-existing account" $ do
+      it "returns a 404 error message" $ do
+        get "/account/200" `shouldRespondWith` 404

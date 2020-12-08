@@ -5,6 +5,7 @@ module Web where
 import Web.Scotty
 import Control.Monad.IO.Class
 import Database.PostgreSQL.Simple (ConnectInfo)
+import Network.HTTP.Types.Status
 
 import Types
 import qualified Types.AccountParams as AP
@@ -16,7 +17,7 @@ createAccountHandler db = do
   result <- liftIO $ withConnection db (createAccount (AP.name accountParams))
   case result of
     [newAccount] -> json newAccount
-    _ -> error "TODO: generate error response"
+    _ -> raise "could not create new account"
 
 
 getAccountHandler :: ConnectInfo -> ActionM ()
@@ -25,7 +26,7 @@ getAccountHandler db = do
   result <- liftIO $ withConnection db (getAccount account_number)
   case result of
     [gotAccount] -> json gotAccount
-    _ -> error "TODO: generate error response"
+    _ -> raiseStatus status404 "no such account"
 
 
 bank :: ConnectInfo -> ScottyM ()

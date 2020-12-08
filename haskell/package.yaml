@@ -27,6 +27,7 @@ dependencies:
 - wai-extra >= 3.0.32
 - bytestring >= 0.10.10.1
 - postgresql-simple >= 0.6.3
+- http-types
 
 library:
   source-dirs: src
