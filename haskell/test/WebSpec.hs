@@ -139,3 +139,19 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
         post "/account" (encode [yamlQQ| name: Mr. Orange |])
         post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
         post "/account/foobar/withdraw" (encode [yamlQQ| amount: 300 |]) `shouldRespondWith` 404
+
+
+  describe "/account/:id/transfer" $ do
+    it "transfers money in the happy case" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account" (encode [yamlQQ| name: Mr. Black |])
+        post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
+        post "/account/1/transfer" (encode [yamlQQ|
+          amount: 50
+          account-number: 2 |])
+          `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. Orange
+            account-number: 1
+            balance: 4950
+          |]

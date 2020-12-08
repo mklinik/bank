@@ -10,6 +10,7 @@ import Network.HTTP.Types.Status
 import Types
 import qualified Types.AccountParams as AP
 import qualified Types.DepositParams as DP
+import qualified Types.TransferParams as TP
 import Database
 
 createAccountHandler :: ConnectInfo -> ActionM ()
@@ -50,9 +51,22 @@ withdrawMoneyHandler db = do
     _ -> raiseStatus status400 "could not withdraw"
 
 
+transferMoneyHandler :: ConnectInfo -> ActionM ()
+transferMoneyHandler db = do
+  senderNumber <- param "id"
+  transferParams <- jsonData
+  let receiverNumber = TP.account_number transferParams
+  let amount = TP.amount transferParams
+  result <- liftAndCatchIO $ withConnection db $ transferMoney senderNumber receiverNumber amount
+  case result of
+    [gotAccount] -> json gotAccount
+    _ -> raiseStatus status400 "could not transfer"
+
+
 bank :: ConnectInfo -> ScottyM ()
 bank db = do
   get "/account/:id" (getAccountHandler db)
   post "/account" (createAccountHandler db)
   post "/account/:id/deposit" (depositMoneyHandler db)
   post "/account/:id/withdraw" (withdrawMoneyHandler db)
+  post "/account/:id/transfer" (transferMoneyHandler db)
