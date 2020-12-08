@@ -1,0 +1,2 @@
+- [ ] how to write integration tests?
+- [ ] do we need a new data type for every json request / response body? What is the preferred way for ad-hoc json?
