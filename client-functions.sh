@@ -12,14 +12,21 @@ request-audit-log() {
 
 request-create-account() {
   curl -v 'http://localhost:3000/account' \
-    -d '{ "name": "Mr. Black" }' \
+    -d "{ \"name\": \"$1\" }" \
     -H "Content-Type: application/json"
   echo ""
 }
 
 request-deposit() {
-  curl -v 'http://localhost:3000/account/42/deposit' \
-    -d '{ "amount": 100 }' \
+  curl -v "http://localhost:3000/account/$1/deposit" \
+    -d "{ \"amount\": $2 }" \
+    -H "Content-Type: application/json"
+  echo ""
+}
+
+request-withdraw() {
+  curl -v "http://localhost:3000/account/$1/withdraw" \
+    -d "{ \"amount\": $2 }" \
     -H "Content-Type: application/json"
   echo ""
 }
