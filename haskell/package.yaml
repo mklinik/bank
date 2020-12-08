@@ -54,3 +54,4 @@ tests:
     - bank
     - hspec >= 2.7.4
     - hspec-wai
+    - yaml >= 0.11.5
