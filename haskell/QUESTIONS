@@ -7,3 +7,4 @@
   - tryAny in the handler? in the database function?
   - Scotty.liftAndCatchIO?
 - [ ] How to handle the error that withdraw tries to get more than available?
+- [ ] All handlers look kind of similar. Is it worth to generalize?
