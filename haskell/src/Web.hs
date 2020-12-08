@@ -18,10 +18,19 @@ createAccountHandler db = do
     [newAccount] -> json newAccount
     _ -> error "TODO: generate error response"
 
+
+getAccountHandler :: ConnectInfo -> ActionM ()
+getAccountHandler db = do
+  account_number <- param "id"
+  result <- liftIO $ withConnection db (getAccount account_number)
+  case result of
+    [gotAccount] -> json gotAccount
+    _ -> error "TODO: generate error response"
+
+
 bank :: ConnectInfo -> ScottyM ()
 bank db = do
-  get "/account/:id" $ do
-    json $ AccountInfo 1 "Mr. Orange" 500
+  get "/account/:id" (getAccountHandler db)
   post "/account" (createAccountHandler db)
   get "/echo/:word" $ do
     beam <- param "word"

@@ -42,3 +42,13 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
             name: Mr. Black
             account-number: 3
             balance: 0 |]
+
+  describe "/account/:id" $ do
+    it "retrieves an account" $ do
+      post "/account" (encode [yamlQQ| name: Mr. Orange |])
+      get "/account/1" `shouldRespondWith` jsonBody
+        [yamlQQ|
+          name: Mr. Orange
+          account-number: 1
+          balance: 0
+        |]
