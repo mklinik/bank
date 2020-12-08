@@ -37,7 +37,17 @@ depositMoneyHandler db = do
   result <- liftAndCatchIO $ withConnection db $ depositMoney accountNumber (DP.amount depositParams)
   case result of
     [gotAccount] -> json gotAccount
-    _ -> raiseStatus status500 "could not deposit"
+    _ -> raiseStatus status400 "could not deposit"
+
+
+withdrawMoneyHandler :: ConnectInfo -> ActionM ()
+withdrawMoneyHandler db = do
+  accountNumber <- param "id"
+  withdrawParams <- jsonData
+  result <- liftAndCatchIO $ withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams)
+  case result of
+    [gotAccount] -> json gotAccount
+    _ -> raiseStatus status400 "could not withdraw"
 
 
 bank :: ConnectInfo -> ScottyM ()
@@ -45,3 +55,4 @@ bank db = do
   get "/account/:id" (getAccountHandler db)
   post "/account" (createAccountHandler db)
   post "/account/:id/deposit" (depositMoneyHandler db)
+  post "/account/:id/withdraw" (withdrawMoneyHandler db)

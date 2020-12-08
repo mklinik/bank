@@ -108,4 +108,34 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
       it "returns an error status code" $ do
         post "/account" (encode [yamlQQ| name: Mr. Orange |])
         post "/account/200/deposit" (encode [yamlQQ| amount: 202 |])
-          `shouldRespondWith` 500
+          `shouldRespondWith` 400
+
+
+  describe "/account/:id/withdraw" $ do
+    it "withdraws the given amount in the happy case" $ do
+      post "/account" (encode [yamlQQ| name: Mr. Orange |])
+      post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
+      post "/account/1/withdraw" (encode [yamlQQ| amount: 300 |]) `shouldRespondWith` jsonBody
+        [yamlQQ|
+          name: Mr. Orange
+          account-number: 1
+          balance: 4700
+        |]
+
+    context "when given a negative amount" $ do
+      it "returns an error status code" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
+        post "/account/1/withdraw" (encode [yamlQQ| amount: -300 |]) `shouldRespondWith` 400
+
+    context "when given a non-existent account number" $ do
+      it "returns an error status code" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
+        post "/account/1000/withdraw" (encode [yamlQQ| amount: 300 |]) `shouldRespondWith` 400
+
+    context "when given a malformed account number" $ do
+      it "returns an error status code" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
+        post "/account/foobar/withdraw" (encode [yamlQQ| amount: 300 |]) `shouldRespondWith` 404
