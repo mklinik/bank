@@ -28,6 +28,9 @@ withConnection :: ConnectInfo -> (Connection -> IO a) -> IO a
 withConnection connInfo f = do
   bracket (SQL.connect connInfo) SQL.close f
 
+withDefaultConnection :: (Connection -> IO a) -> IO a
+withDefaultConnection = withConnection myConnectInfo
+
 
 createTables :: Connection -> IO ()
 createTables conn = void $ SQL.execute_ conn $ mconcat
@@ -44,8 +47,8 @@ dropTables :: Connection -> IO ()
 dropTables conn = void $ SQL.execute_ conn "drop table if exists account"
 
 
-reset :: Connection -> IO ()
-reset conn = do
+resetDatabase :: Connection -> IO ()
+resetDatabase conn = do
   dropTables conn
   createTables conn
 
