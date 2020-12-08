@@ -24,7 +24,6 @@ dependencies:
 - scotty >= 0.11.6
 - aeson >= 1.4.7.1
 - casing >= 0.1.4.1
-- hspec >= 2.7.4
 - wai-extra >= 3.0.32
 - bytestring >= 0.10.10.1
 - postgresql-simple >= 0.6.3
@@ -53,3 +52,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - bank
+    - hspec >= 2.7.4
+    - hspec-wai

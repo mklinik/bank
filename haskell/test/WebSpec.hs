@@ -1,24 +1,24 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
 module WebSpec where
 
 import Test.Hspec
-import Network.Wai.Test
-import Web.Scotty (scottyApp)
+import Test.Hspec.Wai
+import qualified Web.Scotty as S
 import Data.Aeson
 
+import WaiUtil
 import Types
 import Web
 import Database
 
+app = S.scottyApp (bank testDB)
+
 spec :: Spec
-spec = do
-  describe "echo" $ do
-    it "echos a word" $ do
-      bankApp <- scottyApp (bank testDB)
-      resp <- runSession (request $ setPath defaultRequest "/echo/foobar") bankApp
-      simpleBody resp `shouldBe` "foobar"
-  describe "account" $ do
+spec = with app $ do
+  describe "/account" $ do
     it "creates an account" $ do
-      bankApp <- scottyApp (bank testDB)
-      resp <- runSession (request $ setPath defaultRequest "/account/500") bankApp
-      decode (simpleBody resp) `shouldBe` Just (AccountInfo 1 "Mr. Orange" 500)
+      get "/account/1" `shouldRespondWith` jsonBody
+        [ "name" .= String "Mr. Orange"
+        , "account-number" .= Number 1
+        , "balance" .= Number 500
+        ]
