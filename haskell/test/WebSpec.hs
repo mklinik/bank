@@ -52,3 +52,27 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
           account-number: 1
           balance: 0
         |]
+
+    context "when multiple accounts exist" $ do
+      it "can retrieves all accounts" $ do
+        post "/account" (encode [yamlQQ| name: Mr. Orange |])
+        post "/account" (encode [yamlQQ| name: Mr. White |])
+        post "/account" (encode [yamlQQ| name: Mr. Black |])
+        get "/account/1" `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. Orange
+            account-number: 1
+            balance: 0
+          |]
+        get "/account/2" `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. White
+            account-number: 2
+            balance: 0
+          |]
+        get "/account/3" `shouldRespondWith` jsonBody
+          [yamlQQ|
+            name: Mr. Black
+            account-number: 3
+            balance: 0
+          |]
