@@ -91,11 +91,12 @@ depositMoney accountNumber amount conn =
       (amount, accountNumber)
 
 
-withdrawMoney :: Int -> Int -> Connection -> IO [AccountInfo]
+-- TODO: insufficient funds generates ENoSuchAccount, which is probably not what we want
+withdrawMoney :: Int -> Int -> Connection -> IO DbResult
 withdrawMoney accountNumber amount conn =
   if (amount < 0)
-    then pure []
-    else SQL.query conn
+    then return $ EOther "amount must be positive"
+    else mkDbResult <$> SQL.query conn
       (mconcat
         [ "update account set balance = balance - ?"
         , " where account_number = ?"

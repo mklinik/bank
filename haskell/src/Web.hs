@@ -39,10 +39,7 @@ withdrawMoneyHandler :: ConnectInfo -> ActionM ()
 withdrawMoneyHandler db = do
   accountNumber <- param "id"
   withdrawParams <- jsonData
-  result <- liftIO $ withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams)
-  case result of
-    [gotAccount] -> json gotAccount
-    _ -> raiseStatus status400 "could not withdraw"
+  liftIO (withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams)) >>= generateResponse
 
 
 transferMoneyHandler :: ConnectInfo -> ActionM ()

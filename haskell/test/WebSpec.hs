@@ -133,7 +133,7 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
       it "returns an error status code" $ do
         post "/account" (encode [yamlQQ| name: Mr. Orange |])
         post "/account/1/deposit" (encode [yamlQQ| amount: 5000 |])
-        post "/account/1000/withdraw" (encode [yamlQQ| amount: 300 |]) `shouldRespondWith` 400
+        post "/account/1000/withdraw" (encode [yamlQQ| amount: 300 |]) `shouldRespondWith` 404
 
     context "when given a malformed account number" $ do
       it "returns an error status code" $ do

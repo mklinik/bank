@@ -86,7 +86,7 @@ spec = before_ (withTestDB resetDatabase) $ do
     it "withdraws money in the happy case" $ do
       withTestDB (createAccount "Mr. Pink")
       withTestDB (depositMoney 1 50)
-      withTestDB (withdrawMoney 1 20) `shouldReturn` [AccountInfo 1 "Mr. Pink" 30]
+      withTestDB (withdrawMoney 1 20) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 30)
 
     context "when there are multiple accounts" $ do
       it "withdraws only from the given account" $ do
@@ -94,7 +94,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 2 50)
-        withTestDB (withdrawMoney 2 11) `shouldReturn` [AccountInfo 2 "Mr. White" 39]
+        withTestDB (withdrawMoney 2 11) `shouldReturn` Success (AccountInfo 2 "Mr. White" 39)
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 39)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -105,7 +105,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 2 50)
-        withTestDB (withdrawMoney 2 (-11)) `shouldReturn` []
+        withTestDB (withdrawMoney 2 (-11)) `shouldReturn` EOther "amount must be positive"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -115,7 +115,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (withdrawMoney (-50) 11) `shouldReturn` []
+        withTestDB (withdrawMoney (-50) 11) `shouldReturn` ENoSuchAccount
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -124,7 +124,7 @@ spec = before_ (withTestDB resetDatabase) $ do
       it "does nothing" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (depositMoney 1 50)
-        withTestDB (withdrawMoney 1 1000) `shouldReturn` []
+        withTestDB (withdrawMoney 1 1000) `shouldReturn` ENoSuchAccount
 
 
   describe "transferMoney" $ do
