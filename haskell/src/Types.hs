@@ -6,8 +6,9 @@ import Data.Aeson
 import Text.Casing (kebab)
 import Database.PostgreSQL.Simple (FromRow)
 
+-- TODO: don't use the generic FromRow instance, write instance by hand.
 data AccountInfo = AccountInfo
-  { account_number :: Int
+  { accountNumber :: Int
   , name :: String
   , balance :: Int
   } deriving (Generic, Show, Eq, FromRow)
