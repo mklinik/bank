@@ -76,9 +76,12 @@ createAccount name conn = do
     _ -> return $ ENoSuchAccount
 
 
-getAccount :: Int -> Connection -> IO [AccountInfo]
-getAccount accountNumber conn =
-  SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
+getAccount :: Int -> Connection -> IO DbResult
+getAccount accountNumber conn = do
+  result <- SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
+  case result of
+    [gotAccount] -> return $ Success gotAccount
+    _ -> return $ ENoSuchAccount
 
 
 depositMoney :: Int -> Int -> Connection -> IO [AccountInfo]
@@ -117,7 +120,7 @@ transferMoney senderNumber receiverNumber amount conn =
         (senderNumber, receiverNumber)
       when ((numAccounts :: Int) /= 2) (throwString "account verification failed")
       -- we know this will succeed
-      [senderAccount] <- getAccount senderNumber conn
+      Success senderAccount <- getAccount senderNumber conn
       when (balance senderAccount < amount) (throwString "insufficint funds on sender account")
 
       SQL.execute conn "update account set balance = balance + ? where account_number = ?"

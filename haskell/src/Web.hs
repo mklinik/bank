@@ -21,17 +21,12 @@ generateResponse (EOther message) = raiseStatus status400 message
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
   accountParams <- jsonData
-  result <- liftIO $ withConnection db (createAccount (AP.name accountParams))
-  generateResponse result
+  liftIO (withConnection db (createAccount (AP.name accountParams))) >>= generateResponse
 
 getAccountHandler :: ConnectInfo -> ActionM ()
 getAccountHandler db = do
   accountNumber <- param "id"
-  result <- liftIO $ withConnection db (getAccount accountNumber)
-  case result of
-    [gotAccount] -> json gotAccount
-    _ -> raiseStatus status404 "no such account"
-
+  liftIO (withConnection db (getAccount accountNumber)) >>= generateResponse
 
 depositMoneyHandler :: ConnectInfo -> ActionM ()
 depositMoneyHandler db = do

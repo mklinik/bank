@@ -31,20 +31,20 @@ spec = before_ (withTestDB resetDatabase) $ do
   describe "getAccount" $ do
     it "retrieves an account" $ do
       withTestDB (createAccount "Mr. Pink")
-      withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+      withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
 
     it "retrieves multiple accounts" $ do
       sequence_ [withTestDB (createAccount name)
         | name <- ["Mr. Orange", "Mr. Pink", "Mr. Black", "Mr. White"]]
-      withTestDB (getAccount 4) `shouldReturn` [AccountInfo 4 "Mr. White" 0]
-      withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Black" 0]
-      withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. Pink" 0]
-      withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Orange" 0]
+      withTestDB (getAccount 4) `shouldReturn` Success (AccountInfo 4 "Mr. White" 0)
+      withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Black" 0)
+      withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. Pink" 0)
+      withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Orange" 0)
 
     context "when trying to retrieve a non-existing account" $
       it "returns the empty list" $ do
         withTestDB (createAccount "Mr. Pink")
-        withTestDB (getAccount 42) `shouldReturn` []
+        withTestDB (getAccount 42) `shouldReturn` ENoSuchAccount
 
   describe "depositMoney" $ do
     it "deposits money in the happy case" $ do
@@ -57,9 +57,9 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 2 50) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
-        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
+        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
     context "when a non-existing account number is given" $ do
       it "does nothing" $ do
@@ -67,9 +67,9 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 400 50) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
-        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
+        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
     context "when a negative amount is given" $ do
       it "does nothing" $ do
@@ -77,9 +77,9 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 2 (-50)) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
-        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
+        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
 
   describe "withdrawMoney" $ do
@@ -95,9 +95,9 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 2 50)
         withTestDB (withdrawMoney 2 11) `shouldReturn` [AccountInfo 2 "Mr. White" 39]
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 39]
-        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 39)
+        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
     context "when a negative amount is given" $ do
       it "does nothing" $ do
@@ -106,9 +106,9 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Orange")
         withTestDB (depositMoney 2 50)
         withTestDB (withdrawMoney 2 (-11)) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
-        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
+        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
     context "when a non-existing account number is given" $ do
       it "does nothing" $ do
@@ -116,9 +116,9 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
         withTestDB (withdrawMoney (-50) 11) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
-        withTestDB (getAccount 3) `shouldReturn` [AccountInfo 3 "Mr. Orange" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
+        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
     context "when trying to withdraw more than available" $ do
       it "does nothing" $ do
@@ -133,8 +133,8 @@ spec = before_ (withTestDB resetDatabase) $ do
       withTestDB (createAccount "Mr. White")
       withTestDB (depositMoney 1 50)
       withTestDB (transferMoney 1 2 49) `shouldReturn` [AccountInfo 1 "Mr. Pink" 1]
-      withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 1]
-      withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 49]
+      withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 1)
+      withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 49)
 
     context "when sender is equal to receiver" $ do
       it "does nothing" $ do
@@ -142,8 +142,8 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
         withTestDB (transferMoney 1 1 49) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
     context "when amount is negative" $ do
       it "does nothing" $ do
@@ -151,8 +151,8 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
         withTestDB (transferMoney 1 2 (-5)) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
     context "when sender has insufficient funds" $ do
       it "does nothing" $ do
@@ -160,8 +160,8 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
         withTestDB (transferMoney 1 2 5000) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
     context "when sender does not exist" $ do
       it "does nothing" $ do
@@ -169,5 +169,5 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
         withTestDB (transferMoney 42 2 25) `shouldReturn` []
-        withTestDB (getAccount 1) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
-        withTestDB (getAccount 2) `shouldReturn` [AccountInfo 2 "Mr. White" 0]
+        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
+        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
