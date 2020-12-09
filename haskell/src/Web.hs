@@ -24,8 +24,8 @@ createAccountHandler db = do
 
 getAccountHandler :: ConnectInfo -> ActionM ()
 getAccountHandler db = do
-  account_number <- param "id"
-  result <- liftIO $ withConnection db (getAccount account_number)
+  accountNumber <- param "id"
+  result <- liftIO $ withConnection db (getAccount accountNumber)
   case result of
     [gotAccount] -> json gotAccount
     _ -> raiseStatus status404 "no such account"
