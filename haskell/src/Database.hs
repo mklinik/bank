@@ -83,20 +83,18 @@ getAccount accountNumber conn =
 
 
 depositMoney :: Int -> Int -> Connection -> IO DbResult
-depositMoney accountNumber amount conn =
-  if (amount < 0)
-    then return $ EOther "amount must be positive"
-    else mkDbResult <$> SQL.query conn
+depositMoney accountNumber amount conn
+  | amount < 0 = return $ EOther "amount must be positive"
+  | otherwise = mkDbResult <$> SQL.query conn
       "update account set balance = balance + ? where account_number = ? returning *"
       (amount, accountNumber)
 
 
 -- TODO: insufficient funds generates ENoSuchAccount, which is probably not what we want
 withdrawMoney :: Int -> Int -> Connection -> IO DbResult
-withdrawMoney accountNumber amount conn =
-  if (amount < 0)
-    then return $ EOther "amount must be positive"
-    else mkDbResult <$> SQL.query conn
+withdrawMoney accountNumber amount conn
+  | amount < 0 = return $ EOther "amount must be positive"
+  | otherwise = mkDbResult <$> SQL.query conn
       (mconcat
         [ "update account set balance = balance - ?"
         , " where account_number = ?"
