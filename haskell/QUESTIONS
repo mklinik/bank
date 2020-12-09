@@ -1,10 +1,27 @@
 - [ ] How to write integration tests?
   - for example to test malformed json body
 - [ ] Do we need a new data type for every json request / response body? What is the preferred way for ad-hoc json?
+  - yes for request parsing
+  - for responses ad-hoc is okay, with (.=), pairs and encode
 - [ ] What is the best way to specify package versions in package.yaml?
+  - == 2.* gives you an upper bound
+  - == 4.* is good for base
 - [ ] Any thoughts on RIO?
+  - there are several different base replacements, it's a mess
+  - just use base, there is nothing wrong with it
+  - make a file Imports.hs to re-export often-used stuff, then in every source file import Imports
 - [ ] How to do exception handling in Database, the SQL functions can throw exceptions
   - tryAny in the handler? in the database function?
   - Scotty.liftAndCatchIO?
 - [ ] How to handle the error that withdraw tries to get more than available?
 - [ ] All handlers look kind of similar. Is it worth to generalize?
+
+TODO
+
+- no exceptions in transferMoney
+- speed up tests
+  - tests should use connection pool, see package resource pool
+  - re-use one connection somehow
+  - app should use connection pool
+  - tests should initialize the pool to use one connection (pool size 1)
+    - gives synchronization automatically
