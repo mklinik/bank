@@ -109,7 +109,7 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
       it "returns an error status code" $ do
         post "/account" (encode [yamlQQ| name: Mr. Orange |])
         post "/account/200/deposit" (encode [yamlQQ| amount: 202 |])
-          `shouldRespondWith` 400
+          `shouldRespondWith` 404
 
 
   describe "/account/:id/withdraw" $ do

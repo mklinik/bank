@@ -82,11 +82,11 @@ getAccount accountNumber conn =
   mkDbResult <$> SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
 
 
-depositMoney :: Int -> Int -> Connection -> IO [AccountInfo]
+depositMoney :: Int -> Int -> Connection -> IO DbResult
 depositMoney accountNumber amount conn =
   if (amount < 0)
-    then pure []
-    else SQL.query conn
+    then return $ EOther "amount must be positive"
+    else mkDbResult <$> SQL.query conn
       "update account set balance = balance + ? where account_number = ? returning *"
       (amount, accountNumber)
 

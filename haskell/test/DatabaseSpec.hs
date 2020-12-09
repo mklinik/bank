@@ -49,14 +49,14 @@ spec = before_ (withTestDB resetDatabase) $ do
   describe "depositMoney" $ do
     it "deposits money in the happy case" $ do
       withTestDB (createAccount "Mr. Pink")
-      withTestDB (depositMoney 1 50) `shouldReturn` [AccountInfo 1 "Mr. Pink" 50]
+      withTestDB (depositMoney 1 50) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
 
     context "when there are multiple accounts" $ do
       it "deposits money into the requested account" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 2 50) `shouldReturn` [AccountInfo 2 "Mr. White" 50]
+        withTestDB (depositMoney 2 50) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -66,7 +66,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 400 50) `shouldReturn` []
+        withTestDB (depositMoney 400 50) `shouldReturn` ENoSuchAccount
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -76,7 +76,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 2 (-50)) `shouldReturn` []
+        withTestDB (depositMoney 2 (-50)) `shouldReturn` EOther "amount must be positive"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
