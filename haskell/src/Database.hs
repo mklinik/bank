@@ -49,7 +49,7 @@ type WithConn m a = (Connection -> m a) -> m a
 
 individualConnection :: ConnectInfo -> WithConn IO a
 individualConnection connInfo f = do
-  bracket (SQL.connect connInfo) SQL.close f
+  bracket (SQL.connect connInfo) SQL.close (\conn -> (SQL.withTransactionSerializable conn) (f conn))
 
 
 createTables :: Connection -> IO ()
@@ -106,7 +106,7 @@ withdrawMoney accountNumber amount conn =
 transferMoney :: Int -> Int -> Amount -> Connection -> IO DbResult
 transferMoney senderNumber receiverNumber amount conn
   | senderNumber == receiverNumber = return $ EOther "sender must be different from receiver"
-  | otherwise = SQL.withTransactionSerializable conn $ do
+  | otherwise = do
       mbSenderAccount <- getAccount senderNumber conn
       mbReceiverAccount <- getAccount receiverNumber conn
       case (mbSenderAccount, mbReceiverAccount) of
