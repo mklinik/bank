@@ -112,14 +112,13 @@ transferMoney senderNumber receiverNumber amount conn
       mbSenderAccount <- getAccount senderNumber conn
       mbReceiverAccount <- getAccount receiverNumber conn
       case (mbSenderAccount, mbReceiverAccount) of
-        (Success senderAccount, Success receiverAccount) ->
-          if (balance senderAccount < amount)
-            then return $ EOther "insufficient funds"
-            else do
+        (Success senderAccount, Success receiverAccount)
+          | balance senderAccount < amount -> return $ EOther "insufficient funds"
+          | otherwise -> do
               SQL.execute conn
                "update account set balance = balance + ? where account_number = ?"
                 (amount, receiverNumber)
               mkDbResult <$> SQL.query conn
                 "update account set balance = balance - ? where account_number = ? returning *"
                 (amount, senderNumber)
-        _  -> return $ ENoSuchAccount
+        _ -> return ENoSuchAccount
