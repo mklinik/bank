@@ -26,6 +26,10 @@ data DbResult
   | EOther Text
   deriving (Show, Eq)
 
+mkDbResult :: [AccountInfo] -> DbResult
+mkDbResult [gotAccount] = Success gotAccount
+mkDbResult _ = ENoSuchAccount
+
 
 productionDB = SQL.defaultConnectInfo
   { connectHost = "localhost"
@@ -69,19 +73,13 @@ resetDatabase conn = do
 
 
 createAccount :: String -> Connection -> IO DbResult
-createAccount name conn = do
-  result <- SQL.query conn "insert into account (name,balance) values (?, 0) returning *" (Only name)
-  case result of
-    [gotAccount] -> return $ Success gotAccount
-    _ -> return $ ENoSuchAccount
+createAccount name conn =
+  mkDbResult <$> SQL.query conn "insert into account (name,balance) values (?, 0) returning *" (Only name)
 
 
 getAccount :: Int -> Connection -> IO DbResult
-getAccount accountNumber conn = do
-  result <- SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
-  case result of
-    [gotAccount] -> return $ Success gotAccount
-    _ -> return $ ENoSuchAccount
+getAccount accountNumber conn =
+  mkDbResult <$> SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
 
 
 depositMoney :: Int -> Int -> Connection -> IO [AccountInfo]
