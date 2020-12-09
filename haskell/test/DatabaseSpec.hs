@@ -49,14 +49,14 @@ spec = before_ (withTestDB resetDatabase) $ do
   describe "depositMoney" $ do
     it "deposits money in the happy case" $ do
       withTestDB (createAccount "Mr. Pink")
-      withTestDB (depositMoney 1 50) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
+      withTestDB (depositMoney 1 (unsafeMakeAmount 50)) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
 
     context "when there are multiple accounts" $ do
       it "deposits money into the requested account" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 2 50) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
+        withTestDB (depositMoney 2 (unsafeMakeAmount 50)) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -66,17 +66,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 400 50) `shouldReturn` ENoSuchAccount
-        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
-        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
-        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
-
-    context "when a negative amount is given" $ do
-      it "does nothing" $ do
-        withTestDB (createAccount "Mr. Pink")
-        withTestDB (createAccount "Mr. White")
-        withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 2 (-50)) `shouldReturn` EOther "amount must be positive"
+        withTestDB (depositMoney 400 (unsafeMakeAmount 50)) `shouldReturn` ENoSuchAccount
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -85,29 +75,18 @@ spec = before_ (withTestDB resetDatabase) $ do
   describe "withdrawMoney" $ do
     it "withdraws money in the happy case" $ do
       withTestDB (createAccount "Mr. Pink")
-      withTestDB (depositMoney 1 50)
-      withTestDB (withdrawMoney 1 20) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 30)
+      withTestDB (depositMoney 1 (unsafeMakeAmount 50))
+      withTestDB (withdrawMoney 1 (unsafeMakeAmount 20)) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 30)
 
     context "when there are multiple accounts" $ do
       it "withdraws only from the given account" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 2 50)
-        withTestDB (withdrawMoney 2 11) `shouldReturn` Success (AccountInfo 2 "Mr. White" 39)
+        withTestDB (depositMoney 2 (unsafeMakeAmount 50))
+        withTestDB (withdrawMoney 2 (unsafeMakeAmount 11)) `shouldReturn` Success (AccountInfo 2 "Mr. White" 39)
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 39)
-        withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
-
-    context "when a negative amount is given" $ do
-      it "does nothing" $ do
-        withTestDB (createAccount "Mr. Pink")
-        withTestDB (createAccount "Mr. White")
-        withTestDB (createAccount "Mr. Orange")
-        withTestDB (depositMoney 2 50)
-        withTestDB (withdrawMoney 2 (-11)) `shouldReturn` EOther "amount must be positive"
-        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
-        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 50)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
 
     context "when a non-existing account number is given" $ do
@@ -115,7 +94,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (createAccount "Mr. Orange")
-        withTestDB (withdrawMoney (-50) 11) `shouldReturn` ENoSuchAccount
+        withTestDB (withdrawMoney (-50) (unsafeMakeAmount 11)) `shouldReturn` ENoSuchAccount
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
         withTestDB (getAccount 3) `shouldReturn` Success (AccountInfo 3 "Mr. Orange" 0)
@@ -123,16 +102,16 @@ spec = before_ (withTestDB resetDatabase) $ do
     context "when trying to withdraw more than available" $ do
       it "does nothing" $ do
         withTestDB (createAccount "Mr. Pink")
-        withTestDB (depositMoney 1 50)
-        withTestDB (withdrawMoney 1 1000) `shouldReturn` ENoSuchAccount
+        withTestDB (depositMoney 1 (unsafeMakeAmount 50))
+        withTestDB (withdrawMoney 1 (unsafeMakeAmount 1000)) `shouldReturn` ENoSuchAccount
 
 
   describe "transferMoney" $ do
     it "transfers money from one account to another in the happy case" $ do
       withTestDB (createAccount "Mr. Pink")
       withTestDB (createAccount "Mr. White")
-      withTestDB (depositMoney 1 50)
-      withTestDB (transferMoney 1 2 49) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 1)
+      withTestDB (depositMoney 1 (unsafeMakeAmount 50))
+      withTestDB (transferMoney 1 2 (unsafeMakeAmount 49)) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 1)
       withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 1)
       withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 49)
 
@@ -140,17 +119,8 @@ spec = before_ (withTestDB resetDatabase) $ do
       it "does nothing" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
-        withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 1 1 49) `shouldReturn` EOther "sender must be different from receiver"
-        withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
-        withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
-
-    context "when amount is negative" $ do
-      it "does nothing" $ do
-        withTestDB (createAccount "Mr. Pink")
-        withTestDB (createAccount "Mr. White")
-        withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 1 2 (-5)) `shouldReturn` EOther "amount must be positive"
+        withTestDB (depositMoney 1 (unsafeMakeAmount 50))
+        withTestDB (transferMoney 1 1 (unsafeMakeAmount 49)) `shouldReturn` EOther "sender must be different from receiver"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
@@ -158,8 +128,8 @@ spec = before_ (withTestDB resetDatabase) $ do
       it "does nothing" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
-        withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 1 2 5000) `shouldReturn` EOther "insufficient funds"
+        withTestDB (depositMoney 1 (unsafeMakeAmount 50))
+        withTestDB (transferMoney 1 2 (unsafeMakeAmount 5000)) `shouldReturn` EOther "insufficient funds"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
@@ -167,7 +137,7 @@ spec = before_ (withTestDB resetDatabase) $ do
       it "does nothing" $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
-        withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 42 2 25) `shouldReturn` ENoSuchAccount
+        withTestDB (depositMoney 1 (unsafeMakeAmount 50))
+        withTestDB (transferMoney 42 2 (unsafeMakeAmount  25)) `shouldReturn` ENoSuchAccount
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)

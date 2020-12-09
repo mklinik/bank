@@ -5,8 +5,10 @@ import GHC.Generics
 import Data.Aeson
 import Text.Casing (kebab)
 
+import Types (Amount)
+
 data TransferParams = TransferParams
-  { amount :: Int
+  { amount :: Amount
   , account_number :: Int
   } deriving (Generic, Show, Eq)
 

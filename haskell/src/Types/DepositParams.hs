@@ -3,9 +3,10 @@ module Types.DepositParams where
 
 import GHC.Generics
 import Data.Aeson
+import Types (Amount)
 
 data DepositParams = DepositParams
-  { amount :: Int
+  { amount :: Amount
   } deriving (Generic, Show, Eq)
 
 instance FromJSON DepositParams

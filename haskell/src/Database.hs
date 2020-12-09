@@ -82,43 +82,40 @@ getAccount accountNumber conn =
   mkDbResult <$> SQL.query conn "select * from account where account_number = ?" (Only accountNumber)
 
 
-depositMoney :: Int -> Int -> Connection -> IO DbResult
-depositMoney accountNumber amount conn
-  | amount < 0 = return $ EOther "amount must be positive"
-  | otherwise = mkDbResult <$> SQL.query conn
-      "update account set balance = balance + ? where account_number = ? returning *"
-      (amount, accountNumber)
+depositMoney :: Int -> Amount -> Connection -> IO DbResult
+depositMoney accountNumber amount conn =
+  mkDbResult <$> SQL.query conn
+    "update account set balance = balance + ? where account_number = ? returning *"
+    (getAmount amount, accountNumber)
 
 
 -- TODO: insufficient funds generates ENoSuchAccount, which is probably not what we want
-withdrawMoney :: Int -> Int -> Connection -> IO DbResult
-withdrawMoney accountNumber amount conn
-  | amount < 0 = return $ EOther "amount must be positive"
-  | otherwise = mkDbResult <$> SQL.query conn
-      (mconcat
-        [ "update account set balance = balance - ?"
-        , " where account_number = ?"
-        , " and balance >= ?"
-        , " returning *"
-        ])
-      (amount, accountNumber, amount)
+withdrawMoney :: Int -> Amount -> Connection -> IO DbResult
+withdrawMoney accountNumber amount conn =
+  mkDbResult <$> SQL.query conn
+    (mconcat
+      [ "update account set balance = balance - ?"
+      , " where account_number = ?"
+      , " and balance >= ?"
+      , " returning *"
+      ])
+    (getAmount amount, accountNumber, getAmount amount)
 
 
-transferMoney :: Int -> Int -> Int -> Connection -> IO DbResult
+transferMoney :: Int -> Int -> Amount -> Connection -> IO DbResult
 transferMoney senderNumber receiverNumber amount conn
-  | amount < 0 = return $ EOther "amount must be positive"
   | senderNumber == receiverNumber = return $ EOther "sender must be different from receiver"
   | otherwise = SQL.withTransactionSerializable conn $ do
       mbSenderAccount <- getAccount senderNumber conn
       mbReceiverAccount <- getAccount receiverNumber conn
       case (mbSenderAccount, mbReceiverAccount) of
         (Success senderAccount, Success receiverAccount)
-          | balance senderAccount < amount -> return $ EOther "insufficient funds"
+          | balance senderAccount < getAmount amount -> return $ EOther "insufficient funds"
           | otherwise -> do
               SQL.execute conn
                "update account set balance = balance + ? where account_number = ?"
-                (amount, receiverNumber)
+                (getAmount amount, receiverNumber)
               mkDbResult <$> SQL.query conn
                 "update account set balance = balance - ? where account_number = ? returning *"
-                (amount, senderNumber)
+                (getAmount amount, senderNumber)
         _ -> return ENoSuchAccount
