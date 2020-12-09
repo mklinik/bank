@@ -17,6 +17,15 @@ import Data.Functor
 import Data.ByteString (ByteString)
 import Control.Exception.Safe
 import Control.Monad
+import Data.Text.Lazy (Text)
+
+
+data DbResult
+  = Success AccountInfo
+  | ENoSuchAccount
+  | EOther Text
+  deriving (Show, Eq)
+
 
 productionDB = SQL.defaultConnectInfo
   { connectHost = "localhost"
@@ -59,9 +68,12 @@ resetDatabase conn = do
   createTables conn
 
 
-createAccount :: String -> Connection -> IO [AccountInfo]
-createAccount name conn =
-  SQL.query conn "insert into account (name,balance) values (?, 0) returning *" (Only name)
+createAccount :: String -> Connection -> IO DbResult
+createAccount name conn = do
+  result <- SQL.query conn "insert into account (name,balance) values (?, 0) returning *" (Only name)
+  case result of
+    [gotAccount] -> return $ Success gotAccount
+    _ -> return $ ENoSuchAccount
 
 
 getAccount :: Int -> Connection -> IO [AccountInfo]

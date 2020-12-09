@@ -21,12 +21,12 @@ spec = before_ (withTestDB resetDatabase) $ do
   describe "createAccount" $ do
     it "cretes an account and returns it" $ do
       withTestDB (createAccount "Mr. Pink")
-        `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
     it "cretes multiple accounts with ascending account number" $ do
       withTestDB (createAccount "Mr. Pink")
-        `shouldReturn` [AccountInfo 1 "Mr. Pink" 0]
+        `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 0)
       withTestDB (createAccount "Mr. Orange")
-        `shouldReturn` [AccountInfo 2 "Mr. Orange" 0]
+        `shouldReturn` Success (AccountInfo 2 "Mr. Orange" 0)
 
   describe "getAccount" $ do
     it "retrieves an account" $ do

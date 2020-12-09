@@ -29,6 +29,7 @@ dependencies:
 - postgresql-simple
 - http-types
 - safe-exceptions
+- text
 
 library:
   source-dirs: src

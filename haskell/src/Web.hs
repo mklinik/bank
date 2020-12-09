@@ -13,14 +13,16 @@ import qualified Types.DepositParams as DP
 import qualified Types.TransferParams as TP
 import Database
 
+generateResponse :: DbResult -> ActionM ()
+generateResponse (Success gotAccount) = json gotAccount
+generateResponse ENoSuchAccount = raiseStatus status404 "no such account"
+generateResponse (EOther message) = raiseStatus status400 message
+
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
   accountParams <- jsonData
   result <- liftIO $ withConnection db (createAccount (AP.name accountParams))
-  case result of
-    [newAccount] -> json newAccount
-    _ -> raise "could not create new account"
-
+  generateResponse result
 
 getAccountHandler :: ConnectInfo -> ActionM ()
 getAccountHandler db = do
