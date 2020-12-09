@@ -48,10 +48,7 @@ transferMoneyHandler db = do
   transferParams <- jsonData
   let receiverNumber = TP.account_number transferParams
   let amount = TP.amount transferParams
-  result <- liftIO $ withConnection db $ transferMoney senderNumber receiverNumber amount
-  case result of
-    [gotAccount] -> json gotAccount
-    _ -> raiseStatus status400 "could not transfer"
+  generateResponse =<< liftIO (withConnection db $ transferMoney senderNumber receiverNumber amount)
 
 
 bank :: ConnectInfo -> ScottyM ()

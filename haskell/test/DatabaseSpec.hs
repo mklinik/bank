@@ -132,7 +132,7 @@ spec = before_ (withTestDB resetDatabase) $ do
       withTestDB (createAccount "Mr. Pink")
       withTestDB (createAccount "Mr. White")
       withTestDB (depositMoney 1 50)
-      withTestDB (transferMoney 1 2 49) `shouldReturn` [AccountInfo 1 "Mr. Pink" 1]
+      withTestDB (transferMoney 1 2 49) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 1)
       withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 1)
       withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 49)
 
@@ -141,7 +141,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 1 1 49) `shouldReturn` []
+        withTestDB (transferMoney 1 1 49) `shouldReturn` EOther "sender must be different from receiver"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
@@ -150,7 +150,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 1 2 (-5)) `shouldReturn` []
+        withTestDB (transferMoney 1 2 (-5)) `shouldReturn` EOther "amount must be positive"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
@@ -159,7 +159,7 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 1 2 5000) `shouldReturn` []
+        withTestDB (transferMoney 1 2 5000) `shouldReturn` EOther "insufficient funds"
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)
 
@@ -168,6 +168,6 @@ spec = before_ (withTestDB resetDatabase) $ do
         withTestDB (createAccount "Mr. Pink")
         withTestDB (createAccount "Mr. White")
         withTestDB (depositMoney 1 50)
-        withTestDB (transferMoney 42 2 25) `shouldReturn` []
+        withTestDB (transferMoney 42 2 25) `shouldReturn` ENoSuchAccount
         withTestDB (getAccount 1) `shouldReturn` Success (AccountInfo 1 "Mr. Pink" 50)
         withTestDB (getAccount 2) `shouldReturn` Success (AccountInfo 2 "Mr. White" 0)

@@ -106,23 +106,22 @@ withdrawMoney accountNumber amount conn =
       (amount, accountNumber, amount)
 
 
-transferMoney :: Int -> Int -> Int -> Connection -> IO [AccountInfo]
-transferMoney senderNumber receiverNumber amount conn =
-  handleAny (const $ pure []) $ do
-    SQL.withTransactionSerializable conn $ do
-      when (amount < 0) (throwString "amount is negative")
-      [Only numAccounts] <- SQL.query conn (mconcat
-        [ "select count(account_number) from account"
-        , " where account_number = ?"
-        , " or account_number = ?"
-        ])
-        (senderNumber, receiverNumber)
-      when ((numAccounts :: Int) /= 2) (throwString "account verification failed")
-      -- we know this will succeed
-      Success senderAccount <- getAccount senderNumber conn
-      when (balance senderAccount < amount) (throwString "insufficint funds on sender account")
-
-      SQL.execute conn "update account set balance = balance + ? where account_number = ?"
-        (amount, receiverNumber)
-      SQL.query conn "update account set balance = balance - ? where account_number = ? returning *"
-        (amount, senderNumber)
+transferMoney :: Int -> Int -> Int -> Connection -> IO DbResult
+transferMoney senderNumber receiverNumber amount conn
+  | amount < 0 = return $ EOther "amount must be positive"
+  | senderNumber == receiverNumber = return $ EOther "sender must be different from receiver"
+  | otherwise = SQL.withTransactionSerializable conn $ do
+      mbSenderAccount <- getAccount senderNumber conn
+      mbReceiverAccount <- getAccount receiverNumber conn
+      case (mbSenderAccount, mbReceiverAccount) of
+        (Success senderAccount, Success receiverAccount) ->
+          if (balance senderAccount < amount)
+            then return $ EOther "insufficient funds"
+            else do
+              SQL.execute conn
+               "update account set balance = balance + ? where account_number = ?"
+                (amount, receiverNumber)
+              mkDbResult <$> SQL.query conn
+                "update account set balance = balance - ? where account_number = ? returning *"
+                (amount, senderNumber)
+        _  -> return $ ENoSuchAccount
