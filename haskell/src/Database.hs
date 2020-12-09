@@ -45,9 +45,10 @@ testDB = SQL.defaultConnectInfo
   , connectPassword = "w00t"
   }
 
+type WithConn m a = (Connection -> m a) -> m a
 
-withConnection :: ConnectInfo -> (Connection -> IO a) -> IO a
-withConnection connInfo f = do
+individualConnection :: ConnectInfo -> WithConn IO a
+individualConnection connInfo f = do
   bracket (SQL.connect connInfo) SQL.close f
 
 

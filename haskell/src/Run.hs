@@ -11,8 +11,8 @@ run :: IO ()
 run = myWebApp productionDB
 
 myWebApp db = do
-  withConnection db createTables
-  scotty 3000 (bank db)
+  individualConnection db createTables
+  scotty 3000 (bank (individualConnection db))
 
 hello :: IO ()
 hello = do

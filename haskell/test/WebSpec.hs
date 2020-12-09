@@ -12,7 +12,7 @@ import Types
 import Web
 import Database
 
-app = S.scottyApp (bank testDB)
+app = S.scottyApp (bank (individualConnection testDB))
 
 spec :: Spec
 spec = with app $ before_ (withTestDB resetDatabase) $ do

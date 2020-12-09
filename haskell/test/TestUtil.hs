@@ -6,7 +6,7 @@ import Data.Aeson
 
 import Database
 
-withTestDB = withConnection testDB
+withTestDB = individualConnection testDB
 
 jsonBody :: Value -> ResponseMatcher
 jsonBody expected = ResponseMatcher 200 [] (MatchBody (\_ b -> result b))

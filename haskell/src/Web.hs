@@ -18,43 +18,43 @@ generateResponse (Success gotAccount) = json gotAccount
 generateResponse ENoSuchAccount = raiseStatus status404 "no such account"
 generateResponse (EOther message) = raiseStatus status400 message
 
-createAccountHandler :: ConnectInfo -> ActionM ()
-createAccountHandler db = do
+createAccountHandler :: WithConn IO DbResult -> ActionM ()
+createAccountHandler withConn = do
   accountParams <- jsonData
-  generateResponse =<< liftIO (withConnection db (createAccount (AP.name accountParams)))
+  generateResponse =<< liftIO (withConn (createAccount (AP.name accountParams)))
 
-getAccountHandler :: ConnectInfo -> ActionM ()
-getAccountHandler db = do
+getAccountHandler :: WithConn IO DbResult -> ActionM ()
+getAccountHandler withConn = do
   accountNumber <- param "id"
-  generateResponse =<< liftIO (withConnection db (getAccount accountNumber))
+  generateResponse =<< liftIO (withConn (getAccount accountNumber))
 
-depositMoneyHandler :: ConnectInfo -> ActionM ()
-depositMoneyHandler db = do
+depositMoneyHandler :: WithConn IO DbResult -> ActionM ()
+depositMoneyHandler withConn = do
   accountNumber <- param "id"
   depositParams <- jsonData
-  generateResponse =<< liftIO (withConnection db $ depositMoney accountNumber (DP.amount depositParams))
+  generateResponse =<< liftIO (withConn $ depositMoney accountNumber (DP.amount depositParams))
 
 
-withdrawMoneyHandler :: ConnectInfo -> ActionM ()
-withdrawMoneyHandler db = do
+withdrawMoneyHandler :: WithConn IO DbResult -> ActionM ()
+withdrawMoneyHandler withConn = do
   accountNumber <- param "id"
   withdrawParams <- jsonData
-  generateResponse =<< liftIO (withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams))
+  generateResponse =<< liftIO (withConn $ withdrawMoney accountNumber (DP.amount withdrawParams))
 
 
-transferMoneyHandler :: ConnectInfo -> ActionM ()
-transferMoneyHandler db = do
+transferMoneyHandler :: WithConn IO DbResult -> ActionM ()
+transferMoneyHandler withConn = do
   senderNumber <- param "id"
   transferParams <- jsonData
   let receiverNumber = TP.account_number transferParams
   let amount = TP.amount transferParams
-  generateResponse =<< liftIO (withConnection db $ transferMoney senderNumber receiverNumber amount)
+  generateResponse =<< liftIO (withConn $ transferMoney senderNumber receiverNumber amount)
 
 
-bank :: ConnectInfo -> ScottyM ()
-bank db = do
-  get "/account/:id" (getAccountHandler db)
-  post "/account" (createAccountHandler db)
-  post "/account/:id/deposit" (depositMoneyHandler db)
-  post "/account/:id/withdraw" (withdrawMoneyHandler db)
-  post "/account/:id/transfer" (transferMoneyHandler db)
+bank :: WithConn IO DbResult -> ScottyM ()
+bank withConn = do
+  get "/account/:id" (getAccountHandler withConn)
+  post "/account" (createAccountHandler withConn)
+  post "/account/:id/deposit" (depositMoneyHandler withConn)
+  post "/account/:id/withdraw" (withdrawMoneyHandler withConn)
+  post "/account/:id/transfer" (transferMoneyHandler withConn)
