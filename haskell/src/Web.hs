@@ -16,7 +16,7 @@ import Database
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
   accountParams <- jsonData
-  result <- liftAndCatchIO $ withConnection db (createAccount (AP.name accountParams))
+  result <- liftIO $ withConnection db (createAccount (AP.name accountParams))
   case result of
     [newAccount] -> json newAccount
     _ -> raise "could not create new account"
@@ -35,7 +35,7 @@ depositMoneyHandler :: ConnectInfo -> ActionM ()
 depositMoneyHandler db = do
   accountNumber <- param "id"
   depositParams <- jsonData
-  result <- liftAndCatchIO $ withConnection db $ depositMoney accountNumber (DP.amount depositParams)
+  result <- liftIO $ withConnection db $ depositMoney accountNumber (DP.amount depositParams)
   case result of
     [gotAccount] -> json gotAccount
     _ -> raiseStatus status400 "could not deposit"
@@ -45,7 +45,7 @@ withdrawMoneyHandler :: ConnectInfo -> ActionM ()
 withdrawMoneyHandler db = do
   accountNumber <- param "id"
   withdrawParams <- jsonData
-  result <- liftAndCatchIO $ withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams)
+  result <- liftIO $ withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams)
   case result of
     [gotAccount] -> json gotAccount
     _ -> raiseStatus status400 "could not withdraw"
@@ -57,7 +57,7 @@ transferMoneyHandler db = do
   transferParams <- jsonData
   let receiverNumber = TP.account_number transferParams
   let amount = TP.amount transferParams
-  result <- liftAndCatchIO $ withConnection db $ transferMoney senderNumber receiverNumber amount
+  result <- liftIO $ withConnection db $ transferMoney senderNumber receiverNumber amount
   case result of
     [gotAccount] -> json gotAccount
     _ -> raiseStatus status400 "could not transfer"

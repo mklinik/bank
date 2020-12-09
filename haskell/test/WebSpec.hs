@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
 module WebSpec where
 
-import Test.Hspec
+import Test.Hspec hiding (pendingWith)
 import Test.Hspec.Wai
 import qualified Web.Scotty as S
 import Data.Aeson
@@ -44,7 +44,8 @@ spec = with app $ before_ (withTestDB resetDatabase) $ do
             balance: 0 |]
 
     context "when there are no tables" $ do
-      it "responds with a 500 status code" $ do
+      it "throws an SqlError" $ do
+        pendingWith "how to speficy that the handler should throw an SqlError?"
         liftIO $ withTestDB dropTables
         post "/account" (encode [yamlQQ| name: Mr. Black |]) `shouldRespondWith` 500
 
