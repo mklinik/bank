@@ -21,25 +21,25 @@ generateResponse (EOther message) = raiseStatus status400 message
 createAccountHandler :: ConnectInfo -> ActionM ()
 createAccountHandler db = do
   accountParams <- jsonData
-  liftIO (withConnection db (createAccount (AP.name accountParams))) >>= generateResponse
+  generateResponse =<< liftIO (withConnection db (createAccount (AP.name accountParams)))
 
 getAccountHandler :: ConnectInfo -> ActionM ()
 getAccountHandler db = do
   accountNumber <- param "id"
-  liftIO (withConnection db (getAccount accountNumber)) >>= generateResponse
+  generateResponse =<< liftIO (withConnection db (getAccount accountNumber))
 
 depositMoneyHandler :: ConnectInfo -> ActionM ()
 depositMoneyHandler db = do
   accountNumber <- param "id"
   depositParams <- jsonData
-  liftIO (withConnection db $ depositMoney accountNumber (DP.amount depositParams)) >>= generateResponse
+  generateResponse =<< liftIO (withConnection db $ depositMoney accountNumber (DP.amount depositParams))
 
 
 withdrawMoneyHandler :: ConnectInfo -> ActionM ()
 withdrawMoneyHandler db = do
   accountNumber <- param "id"
   withdrawParams <- jsonData
-  liftIO (withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams)) >>= generateResponse
+  generateResponse =<< liftIO (withConnection db $ withdrawMoney accountNumber (DP.amount withdrawParams))
 
 
 transferMoneyHandler :: ConnectInfo -> ActionM ()
